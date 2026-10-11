@@ -26,21 +26,36 @@ quick-scan history, not the deep dive.)*
 - [x] Floor + walking-to-next-fight animation (proper textured floor band; heroes march-in-place on wave transitions via a treadmill effect - see README)
 - [x] Full hero/monster stat system (Level/Exp/Attack Damage/HP/Attack Speed/Armor/Crit/CDR/Move Speed/Cast Speed - see README for exact locations and what each does)
 - [x] Named equipment + expanded rarity + class restrictions (weaponTypes.js for named weapons, 10 rarity tiers, class-restricted swords - see README for full detail)
-- [x] **Per-stage floor theme** — the floor now has two things layered
-  together: a distinct base tone per boss cycle (`FLOOR_TIER_PALETTE` in
-  `Background.js` - tier = `floor(stage / BOSS_INTERVAL)`, 5 tones cycling:
-  neutral dirt → mossy → sandy → icy → volcanic → back to neutral), and the
-  *same* tension-building blend toward danger red as the boss approaches
-  that the hill layer already had - so the floor now genuinely looks
-  different as you push through each 10-stage stretch, and still builds
-  visible tension right before every boss. `Background.setBossProximity(t)`
-  was replaced with `setStage(stage)` - it now takes the raw stage number
-  and computes both the hill tint and the floor's tier+tension blend
-  internally, so `game.js` doesn't need to know the tier math at all.
-  Verified with an exact math check before touching the renderer: at stage
-  15/25/35/50 the actual applied tint matched hand-calculated values
-  byte-for-byte, including the palette correctly wrapping back to tier 0
-  after stage 50 (5 tiers × `BOSS_INTERVAL`).
+- [x] Per-stage floor theme (5 base tones cycling per boss stretch, blending toward red as each boss approaches - see README for full detail)
+- [x] **Real floor art integrated** — replaced the procedurally-drawn floor
+  strip with your uploaded `1-1Floor.png` (310x16, grass-top/dirt-bottom,
+  irregular grass-tuft edges that tile cleanly with no obvious seam).
+  Copied to `src/assets/floor-tile.png` - swap that file for a different
+  design any time, same filename, nothing else needs to change. Positioned
+  so the grass surface sits near `groundY` (character feet), with the
+  deeper dirt rows mostly clipping below the strip's short 48px window -
+  unavoidable given the height budget, but the grass line (what actually
+  matters for "feet on ground") is fully visible. The existing per-stage
+  tint system (tier palette + boss-proximity blend) works unchanged on the
+  new art - verified the exact rendered color at a test stage matched a
+  hand-calculated prediction of the grass color multiplicatively tinted by
+  that stage's blend, down to the pixel value.
+- [x] **Real monster animations (Skeleton + SkeletonKnight)** — your
+  uploaded sprite sheets are integrated as full animations, not static
+  images. 65 frame PNGs live in `src/assets/enemy/` (extracted from your 8
+  sheets: idle/walk/attack/dead for both `skeleton` and `skeletonKnight`).
+  `config/enemySprites.js` maps role -> sprite set (bosses use
+  `skeletonKnight`, everything else uses `skeleton`) and sets a per-set scale,
+  since the two have very different native resolutions (~20px vs ~45px tall).
+  New `fx/SpriteAnimation.js` is a small reusable frame-swap driver (named
+  animations, loop vs one-shot, `onComplete` callback). Enemies **walk in**
+  during their spawn slide, switch to **idle**, play **attack** when a hit
+  lands (then chain back to idle), and play **dead** on kill - with the
+  death fade duration computed from that sprite set's actual death-animation
+  length (4 frames vs 13) instead of a fixed constant. Verified by logging
+  every state transition: per-enemy walk->idle timing matched the spawn
+  stagger, the 6-frame attack ran its full sequence and returned to idle via
+  `onComplete`, and boss stages correctly picked `skeletonKnight`.
 - [ ] **Next up is your call** — see "possible next steps" below.
 
 **Where to edit things** (see README for full detail):

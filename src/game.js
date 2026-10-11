@@ -13,6 +13,8 @@ import { HealthBar } from './fx/HealthBar.js';
 import { ProjectileManager } from './fx/Projectile.js';
 import { ImpactSparkManager } from './fx/ImpactSpark.js';
 import { startMarching, updateMarching } from './fx/WalkCycle.js';
+import { SpriteAnimation } from './fx/SpriteAnimation.js';
+import { ENEMY_SPRITE_SETS, SPRITE_SET_SCALE, spriteSetForRole } from './config/enemySprites.js';
 
 const app = new PIXI.Application({
   resizeTo: document.getElementById('game-root'),
@@ -78,9 +80,10 @@ function makeHeroSprite(hero) {
   return sprite;
 }
 
-function makeEnemySprite() {
-  const sprite = PIXI.Sprite.from(SPRITE_PATHS.enemy);
-  sprite.scale.set(SPRITE_SCALE);
+function makeEnemySprite(spriteSetKey) {
+  const idlePath = ENEMY_SPRITE_SETS[spriteSetKey].idle[0];
+  const sprite = PIXI.Sprite.from(idlePath);
+  sprite.scale.set(SPRITE_SET_SCALE[spriteSetKey]);
   sprite.anchor.set(0.5, 1);
   return sprite;
 }
@@ -320,6 +323,7 @@ async function main() {
       if (!attackerEntry || !target) return;
 
       const onImpact = (heavy, crit) => {
+        attackerEntry.anim.play('attack', { loop: false, onComplete: () => attackerEntry.anim.play('idle') });
         const label = `-${event.amount}${heavy ? '!!' : ''}${crit ? ' CRIT!' : ''}`;
         const color = heavy ? 0xff3333 : crit ? 0xffe066 : 0xff5f5f;
         floatingText.spawn(target.sprite.x, target.sprite.y - 30, label, color);
@@ -393,6 +397,13 @@ async function main() {
       if (entry && !entry.dying) {
         entry.dying = true;
         entry.deathTimer = 0;
+        // Fade duration matches how long this entry's actual death
+        // animation takes (4 frames for a basic skeleton vs 13 for a
+        // skeletonKnight boss - very different lengths) rather than a fixed
+        // constant, so the fade never cuts the animation off early or lingers
+        // pointlessly after it's finished.
+        entry.deathFadeDuration = entry.anim.durationOf('dead') || DEATH_FADE_DURATION;
+        entry.anim.play('dead', { loop: false });
         entry.healthBar.container.visible = false;
         coinBurst.spawn(entry.sprite.x, entry.sprite.y - 15);
       }
@@ -458,7 +469,8 @@ async function main() {
       const waveSize = event.enemies.length;
       event.enemies.forEach((enemy, i) => {
         const baseX = enemySlotX(i, waveSize, app.screen.width);
-        const sprite = makeEnemySprite();
+        const spriteSetKey = spriteSetForRole(enemy.role);
+        const sprite = makeEnemySprite(spriteSetKey);
         const isBoss = event.isBoss;
 
         const entry = {
@@ -466,7 +478,7 @@ async function main() {
           sprite,
           role: enemy.role, // needed to decide melee lunge vs ranged projectile on attack
           moveSpeed: enemy.moveSpeed, // static per-enemy, cached here same as role
-          baseScale: SPRITE_SCALE * (isBoss ? 1.35 : 1),
+          baseScale: SPRITE_SET_SCALE[spriteSetKey] * (isBoss ? 1.35 : 1),
           baseTint: isBoss ? 0xff5555 : 0xffffff,
           hitTimer: 0,
           baseX,
@@ -474,13 +486,17 @@ async function main() {
           engagedTargetId: null,
         };
         entry.healthBar = new HealthBar(app.stage);
+        entry.anim = new SpriteAnimation(sprite, ENEMY_SPRITE_SETS[spriteSetKey]);
 
         // Slide in from off-screen right, staggered slightly per slot so a
         // multi-enemy wave doesn't arrive as one indistinguishable clump.
+        // Plays the walk animation for the duration of that slide (see the
+        // ticker below, which swaps to 'idle' once spawnAnim completes).
         const offscreenX = app.screen.width + 24 + i * 16;
         sprite.y = groundY;
         sprite.x = offscreenX;
         entry.spawnAnim = { timer: -i * 0.08, duration: 0.35, fromX: offscreenX, toX: baseX };
+        entry.anim.play('walk');
 
         app.stage.addChild(sprite);
         enemyEntries.push(entry);
@@ -525,13 +541,16 @@ async function main() {
 
     // Each enemy entry is in exactly one of three states this frame:
     // dying (fading out after death), spawning (sliding in), or active
-    // (normal hp-sync + hit-flash + lunge-toward-hero-on-attack).
+    // (normal hp-sync + hit-flash + lunge-toward-hero-on-attack). The sprite
+    // animation itself (idle/walk/attack/dead frame swapping) advances
+    // unconditionally regardless of which of those states it's in.
     for (let i = enemyEntries.length - 1; i >= 0; i--) {
       const entry = enemyEntries[i];
+      entry.anim.update(dt);
 
       if (entry.dying) {
         entry.deathTimer += dt;
-        const t = Math.min(1, entry.deathTimer / DEATH_FADE_DURATION);
+        const t = Math.min(1, entry.deathTimer / entry.deathFadeDuration);
         entry.sprite.alpha = 1 - t;
         entry.sprite.scale.set(entry.baseScale * (1 - t * 0.3));
         if (t >= 1) {
@@ -550,7 +569,10 @@ async function main() {
           const t = Math.min(1, spawn.timer / spawn.duration);
           const eased = 1 - Math.pow(1 - t, 2); // ease-out
           entry.sprite.x = spawn.fromX + (spawn.toX - spawn.fromX) * eased;
-          if (t >= 1) entry.spawnAnim = null;
+          if (t >= 1) {
+            entry.spawnAnim = null;
+            entry.anim.play('idle');
+          }
         }
         // Health bar still tracks along during the slide-in - falls through
         // to the hp-sync below rather than an early continue.

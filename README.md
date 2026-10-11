@@ -423,16 +423,25 @@ A few implementation notes worth knowing if you're tuning numbers:
 
 ### Floor and character positioning - where to edit
 
-- **Floor appearance** (color, texture, height): `Background._buildFloorLayer()`
-  in `src/fx/Background.js`. `tileH` controls the floor's height in pixels;
-  the three `beginFill()` calls control its baked colors (base fill,
-  top-edge highlight, texture flecks) - these are the *neutral* colors,
-  before any per-stage tint is applied (see below); `layer.alpha` controls
-  how much the desktop shows through underneath it.
+- **Floor appearance**: `src/assets/floor-tile.png` - this is now your real
+  hand-drawn art (310x16, grass-top/dirt-bottom, transparent background),
+  not procedurally-drawn graphics. Swap this file for a different design
+  any time; nothing else needs to change, `Background._buildFloorLayer()`
+  in `src/fx/Background.js` just loads whatever's there. That function
+  still controls sizing/position/alpha (`tileW`/`tileH` constants,
+  `layer.y`, `layer.alpha`) if the new art's dimensions differ from the
+  current 310x16.
 - **Where the floor sits vertically** (and therefore where characters'
   feet land): `groundY` in `game.js` (`app.screen.height - 2`) - this is
   the single source of truth for "the ground," used by hero/enemy sprite
-  positioning, the floor layer, and health bar placement alike.
+  positioning, the floor layer, and health bar placement alike. The floor
+  art itself is positioned at `groundY - 5` (not `groundY` exactly) so its
+  grass surface - not the image's top edge, which starts with a couple of
+  fully-transparent rows - lines up close to where feet actually are. The
+  window's only 48px tall, so the art's deeper dirt rows mostly clip below
+  the visible area; that's an unavoidable tradeoff of the strip's height,
+  not a bug - the grass line (what actually reads as "ground") stays fully
+  visible.
 
 ### Per-stage floor theme
 
@@ -453,11 +462,12 @@ handler every time the stage changes:
   warns from a different starting color depending on which stretch of the
   run you're in.
 
-Both effects are runtime `.tint` multiplication against the floor's baked
-texture (not separate textures per tier - one texture, recolored), so
-adding a tier is a one-line addition to the palette array, no new art or
-texture-generation code needed. Verified with an exact math check before
-touching the renderer - at several test stages, the actual tint value
+Both effects are runtime `.tint` multiplication against the floor art's own
+colors (still one texture, recolored - this kept working unchanged when the
+procedural graphics were swapped for your real art), so adding a tier is a
+one-line addition to the palette array, no new art or texture-generation
+code needed. Verified with an exact math check before touching the renderer
+- at several test stages, the actual tint value
 `Background` applied matched hand-calculated predictions byte-for-byte,
 including the palette wrapping back to tier 0 correctly past its end.
 
@@ -517,29 +527,88 @@ the stated bonuses, a ranger's attempt is rejected and the item stays
 window, where the class-restriction badge and wrong-class slot styling both
 showed up correctly.
 
+### Monster sprite animation
+
+Monsters are real animated sprites now, not a single static image. The pieces:
+
+- **`src/assets/enemy/`** - one PNG per frame (65 total), named
+  `{set}-{animation}-{NN}.png` (e.g. `skeleton-knight-walk-03.png`). These
+  were cut out of your uploaded sprite sheets by detecting fully-transparent
+  gap columns between frames; sheets where a weapon swing or scattering bones
+  created gaps *inside* a single pose needed a larger sliver-merge threshold
+  (the knight's death sheet in particular) so one pose isn't split into pieces.
+- **`config/enemySprites.js`** - **the file to edit when adding or changing a
+  monster look.** It lists each sprite set's frame counts and filename
+  prefixes, a per-set display scale (`SPRITE_SET_SCALE`), and
+  `spriteSetForRole(role)`, which decides which set a role uses. To add a new
+  monster: drop its frame PNGs in `src/assets/enemy/`, add an entry here, and
+  point `spriteSetForRole` at it.
+- **`fx/SpriteAnimation.js`** - a small frame-swap driver. `play(name, {loop,
+  onComplete})` starts an animation; `update(dt)` advances it; `durationOf(name)`
+  returns its length in seconds. One-shot animations hold their last frame and
+  fire `onComplete` once, which is how attack chains back to idle.
+- **How `game.js` drives it**: each enemy entry owns a `SpriteAnimation`. It
+  plays `walk` during the spawn slide-in, `idle` once that finishes, `attack`
+  inside the shared `onImpact` callback when its hit lands (so the pose
+  coincides with the damage number), and `dead` on `enemy-killed`. The
+  death fade length is read from `durationOf('dead')`, so a 4-frame skeleton
+  death and a 13-frame boss death each fade over their own animation's length.
+  `entry.anim.update(dt)` runs every frame regardless of dying/spawning/active
+  state so animations never stall.
+
+Scale is per sprite set rather than one global constant because the two sets
+differ a lot in native size (basic skeleton frames ~20px tall, knight ~45px);
+`SPRITE_SET_SCALE` targets roughly hero height (~38px) for both.
+
 ## Next steps to build this out further
 
 Full checklist lives in `ROADMAP.md`. With waves, formations (on both the
 enemy and hero side), recruiting, projectiles, health bars, real melee
 collision, engage-and-hold, ranged draw/recoil, boss enrage/heavy-attack
-mechanics, a proper floor with a per-stage theme, the wave-transition walk
-animation, a full hero/monster stat system, and named/rarity/class-restricted
-equipment all working, reasonable next moves: Ranger and Priest weapon
-types (the files are ready, just need names), a 4th hero class, real
-arrow/bolt sprites for projectiles instead of colored dots, or a guaranteed
-rare+ drop specifically from boss kills.
+mechanics, a proper floor with real art and a per-stage theme, the
+wave-transition walk animation, a full hero/monster stat system, and
+named/rarity/class-restricted equipment all working, reasonable next moves:
+Ranger and Priest weapon types (the files are ready, just need names), a
+4th hero class, real arrow/bolt sprites for projectiles instead of colored
+dots, or a guaranteed rare+ drop specifically from boss kills.
 
 ## Known rough edges (intentional, for a prototype)
+
+- Archers play the same sword-swing `attack` animation as every other
+  non-boss role - the only attack sheet provided for `skeleton` is a melee
+  swing, so an archer's magic-bolt shot doesn't visually match its pose. A
+  dedicated bow/cast attack sequence would fix it.
+- The attack animation triggers when the hit *lands* (inside `onImpact`), not
+  at the start of the swing, so there's no separate wind-up pose before
+  impact. Simple and reliably in sync with the damage number, but less
+  cinematic than starting it at attack-decision time.
+- During a combat engage-travel (an enemy closing the gap to its target) the
+  sprite keeps playing `idle`, not `walk` - `walk` only plays for the initial
+  spawn slide-in. Easy extension if the sliding-while-idle looks off.
+- Frames within one animation have different canvas heights in some sheets
+  (e.g. the knight's attack effects are taller than its idle), and sprites
+  anchor to the bottom-center of whatever frame is showing, so feet can shift
+  slightly when switching animation types. Padding frames to a uniform canvas
+  would remove it.
+- Regular skeleton roles (tank/brawler/archer) all share one look - stats
+  differ, visuals don't yet.
 
 - The floor's tier palette (`FLOOR_TIER_PALETTE`) only has 5 entries and
   then repeats - stage 51+ looks the same as stage 1+ again. Adding more
   entries is a one-line change if you want more visual variety deeper into
   a run before it starts repeating.
-- Floor tier colors are tuned as multiplicative tints against the floor's
-  existing baked colors (warm dirt tones), so very different hues (e.g. a
-  vivid blue) will look muted/desaturated compared to what you'd expect
-  from the raw palette value - the underlying texture still shows through.
-  Worth knowing if a tier's color looks "off" compared to its hex value.
+- Floor tier colors are tuned as multiplicative tints against the floor
+  art's existing colors (grass green, dirt brown), so very different hues
+  (e.g. a vivid blue) will look muted/desaturated compared to what you'd
+  expect from the raw palette value - the underlying art still shows
+  through. Worth knowing if a tier's color looks "off" compared to its hex
+  value. If you swap in floor art with a very different base palette, the
+  tier colors in `FLOOR_TIER_PALETTE` may need retuning to still read well.
+- The floor art's deeper dirt rows mostly clip below the strip's 48px
+  window - there just isn't vertical room to show the full 16px of art
+  without either the grass line sitting oddly high or the dirt getting cut
+  off. Currently tuned to keep the grass line (where feet visually land)
+  fully visible at the cost of the dirt depth.
 - Only `sword` (Knight) has real named weapons - Ranger and Priest have no
   class-restricted weapon type yet, so a weapon-slot drop can currently
   only ever be a sword. Add `bow`/`staff` (or whatever) to

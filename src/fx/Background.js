@@ -10,7 +10,7 @@ const DANGER_TINT = { r: 0xe0, g: 0x48, b: 0x48 }; // matches the app's red acce
 // One base tone per boss cycle (stages 1-9 = tier 0, 11-19 = tier 1, ...),
 // cycling once you run out - gives each stretch of the run a distinct feel
 // even before the danger-tint blend kicks in near the next boss. Tuned as
-// multiplicative tints against the floor's own baked colors (see
+// multiplicative tints against the floor art's own colors (see
 // _buildFloorLayer), so keep these reasonably close to white/neutral rather
 // than pure hues - tint MULTIPLIES the texture, it doesn't replace it.
 const FLOOR_TIER_PALETTE = [
@@ -34,7 +34,8 @@ function lerpColor(from, to, t) {
  * stand on. Deliberately kept semi-transparent and partial-height - the
  * strip's transparency (blending with the desktop) is part of the original
  * design, so this adds a sense of motion and ground without turning the
- * window into an opaque scene.
+ * window into an opaque scene. The floor uses real art (src/assets/floor-
+ * tile.png); the hills are still procedurally drawn.
  */
 export class Background {
   constructor(app, screenWidth, screenHeight, groundY) {
@@ -76,36 +77,29 @@ export class Background {
   }
 
   _buildFloorLayer(app, screenWidth, groundY) {
-    const tileW = 24;
-    const tileH = 3;
-    const gfx = new PIXI.Graphics();
-
-    // Base path fill - a warm, neutral dirt-path tone. Baked as real colors
-    // (not purely runtime .tint) since this layer needs several distinct
-    // shades in the same texture - tinting at runtime (see setStage()) then
-    // multiplies these as a group rather than replacing them, which keeps
-    // the highlight/fleck detail visible under every stage theme.
-    gfx.beginFill(0x4a4038, 1);
-    gfx.drawRect(0, 0, tileW, tileH);
-    gfx.endFill();
-
-    // Top-edge highlight - a lighter line suggesting the path catching light.
-    gfx.beginFill(0x6b5f4f, 1);
-    gfx.drawRect(0, 0, tileW, 1);
-    gfx.endFill();
-
-    // A couple of small darker texture flecks (pebbles/cracks) per tile.
-    gfx.beginFill(0x352c26, 1);
-    gfx.drawRect(6, 2, 2, 1);
-    gfx.drawRect(15, 2, 1, 1);
-    gfx.endFill();
-
-    const texture = app.renderer.generateTexture(gfx);
-    gfx.destroy();
+    // Real hand-drawn floor art (src/assets/floor-tile.png, 310x16, grass
+    // top / dirt bottom, transparent background) - replaces the earlier
+    // procedurally-drawn strip. The left/right edges have an irregular
+    // grass-tuft silhouette rather than a flat line, which is what makes
+    // the tile boundary read as organic instead of an obvious hard seam.
+    //
+    // Dimensions are hardcoded rather than read from texture.width/height -
+    // image loading is async, so those can still be 0 at this exact
+    // synchronous moment. The actual tiling pattern uses the real loaded
+    // texture regardless; this only affects the extra padding added to the
+    // TilingSprite's display width for seamless edge scrolling.
+    const tileW = 310;
+    const tileH = 16;
+    const texture = PIXI.Texture.from('assets/floor-tile.png');
 
     const layer = new PIXI.TilingSprite(texture, screenWidth + tileW, tileH);
-    layer.y = groundY; // top edge sits right where sprite feet are
-    layer.alpha = 0.55; // more solid than the strip used to be, still blends with the desktop
+    // Align the grass surface (not the image's top edge, which starts with
+    // a couple of fully-transparent rows) close to groundY, so character
+    // feet read as standing on the grass line rather than floating above it
+    // or buried in the dirt band below - the window's only 48px tall, so
+    // the deeper dirt rows mostly clip below the visible area, which is fine.
+    layer.y = groundY - 5;
+    layer.alpha = 0.6;
     return layer;
   }
 
