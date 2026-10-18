@@ -3,8 +3,6 @@ package io.arkansasio.taskbarhero;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -29,14 +27,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class MainActivity extends Activity {
-    private static final String RAW_BUILD_INFO = "https://raw.githubusercontent.com/ArkansasIo/Moblie-RPG-Hero/main/src/build-info.json";
+    private static final String RAW_BUILD_INFO = "https://github.com/ArkansasIo/Moblie-RPG-Hero/releases/download/mobile-latest/build-info.json";
     private static final String UPDATE_ZIP = "https://github.com/ArkansasIo/Moblie-RPG-Hero/releases/download/mobile-latest/mobile-rpg-web-latest.zip";
     private static final int CONNECT_TIMEOUT_MS = 15000;
     private static final int READ_TIMEOUT_MS = 30000;
 
     private WebView webView;
     private File updateRoot;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,27 +69,16 @@ public class MainActivity extends Activity {
 
     private void loadCurrentGame() {
         File current = new File(updateRoot, "current/index.html");
-        if (current.isFile()) {
-            webView.loadUrl("https://appassets.androidplatform.net/updates/current/index.html");
-        } else {
-            webView.loadUrl("https://appassets.androidplatform.net/assets/game/index.html");
-        }
+        if (current.isFile()) webView.loadUrl("https://appassets.androidplatform.net/updates/current/index.html");
+        else webView.loadUrl("https://appassets.androidplatform.net/assets/game/index.html");
     }
 
     private JSONObject readLocalBuildInfo() {
         try {
             File updatedInfo = new File(updateRoot, "current/build-info.json");
-            if (updatedInfo.isFile()) {
-                return new JSONObject(readText(updatedInfo));
-            }
+            if (updatedInfo.isFile()) return new JSONObject(readText(updatedInfo));
             InputStream input = getAssets().open("game/build-info.json");
-            byte[] bytes = new byte[input.available()];
-            int offset = 0;
-            while (offset < bytes.length) {
-                int count = input.read(bytes, offset, bytes.length - offset);
-                if (count < 0) break;
-                offset += count;
-            }
+            byte[] bytes = readAll(input);
             input.close();
             return new JSONObject(new String(bytes, "UTF-8"));
         } catch (Exception ignored) {
@@ -101,13 +88,7 @@ public class MainActivity extends Activity {
 
     private static String readText(File file) throws IOException {
         FileInputStream input = new FileInputStream(file);
-        byte[] bytes = new byte[(int) file.length()];
-        int offset = 0;
-        while (offset < bytes.length) {
-            int count = input.read(bytes, offset, bytes.length - offset);
-            if (count < 0) break;
-            offset += count;
-        }
+        byte[] bytes = readAll(input);
         input.close();
         return new String(bytes, "UTF-8");
     }
@@ -147,19 +128,13 @@ public class MainActivity extends Activity {
                 unzipSafely(tempZip, tempDir);
                 File index = new File(tempDir, "index.html");
                 File buildInfo = new File(tempDir, "build-info.json");
-                if (!index.isFile() || !buildInfo.isFile()) {
-                    throw new IOException("Update package is incomplete");
-                }
+                if (!index.isFile() || !buildInfo.isFile()) throw new IOException("Update package is incomplete");
                 JSONObject downloaded = new JSONObject(readText(buildInfo));
-                if (!remote.optString("buildId").equals(downloaded.optString("buildId"))) {
-                    throw new IOException("Update package build ID mismatch");
-                }
+                if (!remote.optString("buildId").equals(downloaded.optString("buildId"))) throw new IOException("Update package build ID mismatch");
                 File current = new File(updateRoot, "current");
                 File backup = new File(updateRoot, "previous");
                 deleteRecursive(backup);
-                if (current.exists() && !current.renameTo(backup)) {
-                    throw new IOException("Could not stage previous version");
-                }
+                if (current.exists() && !current.renameTo(backup)) throw new IOException("Could not stage previous version");
                 if (!tempDir.renameTo(current)) {
                     if (backup.exists()) backup.renameTo(current);
                     throw new IOException("Could not activate update");
@@ -181,9 +156,7 @@ public class MainActivity extends Activity {
     private JSONObject fetchJson(String urlString) throws Exception {
         HttpURLConnection connection = open(urlString);
         try {
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new IOException("HTTP " + connection.getResponseCode());
-            }
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) throw new IOException("HTTP " + connection.getResponseCode());
             InputStream input = new BufferedInputStream(connection.getInputStream());
             byte[] data = readAll(input);
             input.close();
@@ -196,16 +169,12 @@ public class MainActivity extends Activity {
     private void downloadFile(String urlString, File destination) throws Exception {
         HttpURLConnection connection = open(urlString);
         try {
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new IOException("HTTP " + connection.getResponseCode());
-            }
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) throw new IOException("HTTP " + connection.getResponseCode());
             InputStream input = new BufferedInputStream(connection.getInputStream());
             FileOutputStream output = new FileOutputStream(destination);
             byte[] buffer = new byte[8192];
             int count;
-            while ((count = input.read(buffer)) != -1) {
-                output.write(buffer, 0, count);
-            }
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
             output.close();
             input.close();
         } finally {
@@ -237,11 +206,9 @@ public class MainActivity extends Activity {
         byte[] buffer = new byte[8192];
         while ((entry = input.getNextEntry()) != null) {
             File output = new File(destination, entry.getName());
-            String canonical = output.getCanonicalPath();
-            if (!canonical.startsWith(root)) throw new IOException("Unsafe archive path");
-            if (entry.isDirectory()) {
-                output.mkdirs();
-            } else {
+            if (!output.getCanonicalPath().startsWith(root)) throw new IOException("Unsafe archive path");
+            if (entry.isDirectory()) output.mkdirs();
+            else {
                 File parent = output.getParentFile();
                 if (parent != null) parent.mkdirs();
                 FileOutputStream stream = new FileOutputStream(output);
@@ -269,14 +236,10 @@ public class MainActivity extends Activity {
 
     public class AndroidBridge {
         @JavascriptInterface
-        public void updateFromGitHub() {
-            checkAndUpdate();
-        }
+        public void updateFromGitHub() { checkAndUpdate(); }
 
         @JavascriptInterface
-        public String getBuildInfo() {
-            return readLocalBuildInfo().toString();
-        }
+        public String getBuildInfo() { return readLocalBuildInfo().toString(); }
     }
 
     @Override
