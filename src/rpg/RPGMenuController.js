@@ -5,6 +5,7 @@ import {installMenuHotkeys} from './MenuHotkeys.js';
 import {loadMenuState,saveMenuState} from './MenuPersistence.js';
 import {getPageData} from './MenuPageData.js';
 import {menuNotifications} from './MenuNotifications.js';
+import './rpg-menu-components.css';
 
 export class RPGMenuController {
   constructor({documentRef=document,storage=globalThis.localStorage,root=null,state=null}={}) {
@@ -13,11 +14,11 @@ export class RPGMenuController {
     this.router=new MenuRouter(saved?.menu&&saved?.page?{menu:saved.menu,page:saved.page}:undefined);
     this.renderer=createMenuRenderer({documentRef});
     this.root=root??documentRef.createElement('div');
-    this.root.className='rpg-menu-shell';
+    this.root.className='rpg-menu-shell is-closed';
     this.unsubscribe=null; this.removeHotkeys=null; this.search=null;
   }
   mount(target=this.root) {
-    this.root=target; this.root.replaceChildren();
+    this.root=target; this.root.classList.add('rpg-menu-shell','is-closed'); this.root.replaceChildren();
     const layout=this.documentRef.createElement('div'); layout.className='rpg-menu-layout';
     const sidebar=this.documentRef.createElement('div'); sidebar.className='rpg-menu-sidebar-host';
     const content=this.documentRef.createElement('div'); content.className='rpg-menu-content-host';
@@ -43,11 +44,12 @@ export class RPGMenuController {
     if(categories.length){const list=this.documentRef.createElement('div');list.className='menu-category-grid';categories.forEach(item=>{const b=this.documentRef.createElement('button');b.type='button';b.className='menu-category';b.textContent=String(item);b.onclick=()=>menuNotifications.push(`${page}: ${item}`,'info');list.appendChild(b)});body.appendChild(list);}
     return body;
   }
-  open(menu,page){return this.router.go(menu,page)}
+  open(menu,page){this.root.classList.remove('is-closed');return menu?this.router.go(menu,page):true}
   back(){return this.router.back()}
   home(){return this.router.home()}
   refresh(){const state=this.router.getState();this.router.emit();return state}
-  close(){this.root.classList.toggle('is-closed')}
-  destroy(){this.unsubscribe?.();this.removeHotkeys?.();this.search=null;}
+  close(){this.root.classList.add('is-closed')}
+  toggle(){this.root.classList.toggle('is-closed');return !this.root.classList.contains('is-closed')}
+  destroy(){this.unsubscribe?.();this.removeHotkeys?.();this.search=null;this.root.remove()}
 }
-export function createRPGMenu(options={}){return new RPGMenuController(options)}
+export function createRPGMenu(options={}){const controller=new RPGMenuController(options);controller.mount();return controller}
