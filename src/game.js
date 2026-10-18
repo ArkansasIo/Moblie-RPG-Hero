@@ -30,6 +30,7 @@ const SPRITE_PATHS = {
   knight: 'assets/hero-knight.png',
   ranger: 'assets/hero-ranger.png',
   priest: 'assets/hero-priest.png',
+  mage: 'assets/hero-mage.png',
   enemy: 'assets/enemy-slime.png',
 };
 
@@ -40,6 +41,7 @@ const WALK_SPRITE_PATHS = {
   knight: ['assets/hero-knight-walk1.png', 'assets/hero-knight-walk2.png'],
   ranger: ['assets/hero-ranger-walk1.png', 'assets/hero-ranger-walk2.png'],
   priest: ['assets/hero-priest-walk1.png', 'assets/hero-priest-walk2.png'],
+  mage: ['assets/hero-mage-walk1.png', 'assets/hero-mage-walk2.png'],
 };
 
 // How long the "marching in place" animation plays on a wave transition -
@@ -284,7 +286,7 @@ async function main() {
         sound.play('hit-dealt');
       };
 
-      if (attacker.hero.classId === 'ranger') {
+      if (attacker.hero.classId === 'ranger' || attacker.hero.classId === 'mage') {
         // The shot doesn't fire immediately - it launches at the moment the
         // draw animation releases, so the arrow visually leaves as the bow
         // snaps forward instead of popping into existence instantly.
@@ -296,7 +298,7 @@ async function main() {
           projectiles.spawn(
             attacker.sprite.x, attacker.sprite.y - 18,
             targetEntry.sprite.x, targetEntry.sprite.y - 18,
-            0xd9b877, // wooden-arrow tan
+            attacker.hero.classId === 'mage' ? 0x8d70ff : 0xd9b877, // arcane bolt or wooden arrow
             onImpact
           );
         });
