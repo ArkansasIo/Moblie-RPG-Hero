@@ -123,6 +123,7 @@ jobs:
           sha256sum release/*.apk > release/SHA256SUMS.txt
           cp mobile-rpg-web-latest.zip release/mobile-rpg-web-latest.zip
           cp mobile-rpg-web-latest.sha256 release/mobile-rpg-web-latest.sha256
+          cp src/build-info.json release/build-info.json
           printf 'Mo RPG Hero\nVersion: %s\nBuild ID: %s\nPatch: %s\nSource revision: %s\nCommit: %s\n' "$VERSION_NAME" "$BUILD_ID" "$PATCH" "$SOURCE_REVISION" "$GITHUB_SHA" > release/BUILD_INFO.txt
 
       - name: Upload installable debug APK
@@ -147,4 +148,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view mobile-latest >/dev/null 2>&1 || gh release create mobile-latest --target "$GITHUB_SHA" --title "Mo RPG Hero Mobile Latest" --notes "Rolling mobile content update for build ${VERSION_NAME} (${BUILD_ID})." --prerelease
-          gh release upload mobile-latest release/mobile-rpg-web-latest.zip release/mobile-rpg-web-latest.sha256 release/BUILD_INFO.txt --clobber
+          gh release upload mobile-latest release/mobile-rpg-web-latest.zip release/mobile-rpg-web-latest.sha256 release/build-info.json release/BUILD_INFO.txt --clobber
