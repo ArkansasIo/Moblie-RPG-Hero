@@ -47,6 +47,8 @@ jobs:
           VERSION_NAME="${BASE_VERSION}-build.${GITHUB_RUN_NUMBER}"
           PATCH="patch.${SOURCE_REVISION}.${SHORT_SHA}"
           BUILD_ID="${VERSION_NAME}-${SHORT_SHA}"
+          PACKAGE_SUFFIX="ci${GITHUB_RUN_NUMBER}"
+          PACKAGE_ID="io.arkansasio.taskbarhero.${PACKAGE_SUFFIX}"
           mkdir -p src
           cat > src/build-info.json <<EOF
           {
@@ -58,7 +60,8 @@ jobs:
             "patch": "${PATCH}",
             "commit": "${COMMIT_SHA}",
             "sourceRevision": ${SOURCE_REVISION},
-            "channel": "main",
+            "channel": "main-ci",
+            "applicationId": "${PACKAGE_ID}",
             "releaseAsset": "mobile-rpg-web-latest.zip"
           }
           EOF
@@ -69,8 +72,11 @@ jobs:
             echo "PATCH=${PATCH}"
             echo "SOURCE_REVISION=${SOURCE_REVISION}"
             echo "SHORT_SHA=${SHORT_SHA}"
+            echo "PACKAGE_SUFFIX=${PACKAGE_SUFFIX}"
+            echo "PACKAGE_ID=${PACKAGE_ID}"
           } >> "$GITHUB_ENV"
           echo "Build: ${VERSION_NAME} (${BUILD_ID})"
+          echo "CI application ID: ${PACKAGE_ID}"
           echo "Patch: ${PATCH}"
 
       - name: Setup Node.js
@@ -84,17 +90,6 @@ jobs:
 
       - name: Validate RPG JavaScript source
         run: npm run check:rpg
-
-      - name: Report visual asset inventory
-        shell: bash
-        run: |
-          count=$(find src/assets/visual -type f -iname '*.png' ! -path '*/source/*' 2>/dev/null | wc -l | tr -d ' ')
-          echo "Production visual PNGs in repository: ${count}"
-          if [ "${count}" = "169" ]; then
-            echo "Full 169-PNG visual pack is present."
-          else
-            echo "Visual pack is not fully present in repository; Android build will use the checked-in/fallback assets."
-          fi
 
       - name: Stage web game into Android assets
         run: npm run android:assets
@@ -112,11 +107,11 @@ jobs:
 
       - name: Compile debug APK
         working-directory: android
-        run: gradle --no-daemon :app:assembleDebug -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME}
+        run: gradle --no-daemon :app:assembleDebug -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME} -PciPackageSuffix=${PACKAGE_SUFFIX}
 
-      - name: Compile installable release APK
+      - name: Compile installable CI release APK
         working-directory: android
-        run: gradle --no-daemon :app:assembleRelease -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME}
+        run: gradle --no-daemon :app:assembleRelease -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME} -PciPackageSuffix=${PACKAGE_SUFFIX} -PciTestSigning=true
 
       - name: Verify APK signatures
         run: |
@@ -125,7 +120,6 @@ jobs:
           "$BUILD_TOOLS/apksigner" verify --verbose android/app/build/outputs/apk/release/app-release.apk
 
       - name: Verify full visual pack inside release APK
-        if: ${{ hashFiles('src/assets/visual/**/*.png') != '' }}
         run: node scripts/verify-apk-assets.mjs android/app/build/outputs/apk/release/app-release.apk
 
       - name: Package current web build for in-app updater
@@ -142,18 +136,18 @@ jobs:
         run: |
           mkdir -p release
           cp android/app/build/outputs/apk/debug/app-debug.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-debug.apk"
-          cp android/app/build/outputs/apk/release/app-release.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-release.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-ci-install.apk"
           sha256sum release/*.apk > release/SHA256SUMS.txt
           cp mobile-rpg-web-latest.zip release/mobile-rpg-web-latest.zip
           cp mobile-rpg-web-latest.sha256 release/mobile-rpg-web-latest.sha256
           cp src/build-info.json release/build-info.json
-          printf 'Mo RPG Hero\nVersion: %s\nBuild ID: %s\nPatch: %s\nSource revision: %s\nCommit: %s\nSigning: CI test/release APK is Android-debug-key signed for direct device installation.\n' "$VERSION_NAME" "$BUILD_ID" "$PATCH" "$SOURCE_REVISION" "$GITHUB_SHA" > release/BUILD_INFO.txt
+          printf 'Mo RPG Hero\nVersion: %s\nBuild ID: %s\nPatch: %s\nSource revision: %s\nCommit: %s\nApplication ID: %s\nSigning: CI release APK uses the runner debug key and a unique CI package ID; production updates require a persistent release keystore.\n' "$VERSION_NAME" "$BUILD_ID" "$PATCH" "$SOURCE_REVISION" "$GITHUB_SHA" "$PACKAGE_ID" > release/BUILD_INFO.txt
 
-      - name: Upload installable release APK
+      - name: Upload installable CI release APK
         uses: actions/upload-artifact@v4
         with:
-          name: mo-rpg-hero-android-release-${{ env.VERSION_NAME }}
-          path: release/Mo-RPG-Hero-Android-${{ env.VERSION_NAME }}-release.apk
+          name: mo-rpg-hero-android-ci-release-${{ env.VERSION_NAME }}
+          path: release/Mo-RPG-Hero-Android-${{ env.VERSION_NAME }}-ci-install.apk
           if-no-files-found: error
           retention-days: 30
 
