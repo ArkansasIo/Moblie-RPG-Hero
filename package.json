@@ -14,7 +14,7 @@
     "dist": "npx --yes electron-builder@24.13.3 --win nsis",
     "dist:dir": "npx --yes electron-builder@24.13.3 --dir",
     "android:assets": "npm run assets:import && npm run validate:visual && node scripts/stage-android-assets.mjs",
-    "android:apk": "npm run android:assets && npm run android:apk:debug && npm run android:apk:release",
+    "android:apk": "npm run android:assets && cd android && gradle --no-daemon :app:assembleDebug :app:assembleRelease",
     "android:apk:debug": "npm run android:assets && cd android && gradle :app:assembleDebug",
     "android:apk:release": "npm run android:assets && cd android && gradle :app:assembleRelease",
     "sync-lockfile": "node scripts/sync-lockfile.mjs",
