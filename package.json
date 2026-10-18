@@ -8,6 +8,7 @@
   "scripts": {
     "start": "electron .",
     "check": "node --check main.js && node --check preload.js && node --check preload-inventory.js && node --check --input-type=module < src/game.js",
+    "check:rpg": "node scripts/check-rpg-source.mjs",
     "dist": "npx --yes electron-builder@24.13.3 --win nsis",
     "dist:dir": "npx --yes electron-builder@24.13.3 --dir",
     "android:assets": "node scripts/stage-android-assets.mjs",
