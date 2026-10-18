@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Mo RPG Hero APK
 
 on:
   push:
@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Compile Taskbar Hero APK
+    name: Compile Mo RPG Hero APK
     runs-on: ubuntu-latest
 
     steps:
@@ -65,7 +65,7 @@ jobs:
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: taskbar-hero-android-debug
+          name: mo-rpg-hero-android-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
@@ -73,7 +73,7 @@ jobs:
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: taskbar-hero-android-release-unsigned
+          name: mo-rpg-hero-android-release-unsigned
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
           retention-days: 30
