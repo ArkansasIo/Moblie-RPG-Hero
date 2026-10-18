@@ -4,13 +4,18 @@ plugins {
 
 def buildVersionCode = project.hasProperty('buildVersionCode') ? project.property('buildVersionCode').toString().toInteger() : 4
 def buildVersionName = project.hasProperty('buildVersionName') ? project.property('buildVersionName').toString() : '0.3.1'
+def ciPackageSuffix = project.hasProperty('ciPackageSuffix') ? project.property('ciPackageSuffix').toString() : ''
+def ciTestSigning = project.hasProperty('ciTestSigning') && project.property('ciTestSigning').toString().toBoolean()
+
+def baseApplicationId = 'io.arkansasio.taskbarhero'
+def resolvedApplicationId = ciPackageSuffix ? "${baseApplicationId}.${ciPackageSuffix}" : baseApplicationId
 
 android {
-    namespace 'io.arkansasio.taskbarhero'
+    namespace baseApplicationId
     compileSdk 35
 
     defaultConfig {
-        applicationId 'io.arkansasio.taskbarhero'
+        applicationId resolvedApplicationId
         minSdk 23
         targetSdk 35
         versionCode buildVersionCode
@@ -18,9 +23,8 @@ android {
     }
 
     signingConfigs {
-        // This project distributes CI/test builds directly to devices. The release
-        // variant must be signed; otherwise Android rejects the APK as unsigned.
-        // Use the Android debug keystore for the CI test/release artifact.
+        // CI/test builds use the runner's debug certificate only when explicitly
+        // requested. Production releases must use a persistent release keystore.
         ciTest {
             initWith signingConfigs.debug
         }
@@ -30,7 +34,9 @@ android {
         release {
             minifyEnabled false
             shrinkResources false
-            signingConfig signingConfigs.ciTest
+            if (ciTestSigning) {
+                signingConfig signingConfigs.ciTest
+            }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
