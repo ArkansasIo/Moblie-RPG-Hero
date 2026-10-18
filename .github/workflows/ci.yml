@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -26,6 +26,8 @@ jobs:
         run: npm install
       - name: Check main-process JavaScript syntax
         run: npm run check
+      - name: Check RPG source
+        run: npm run check:rpg
       - name: Check renderer module syntax
         run: |
           node --check --input-type=module < src/game.js
@@ -44,7 +46,10 @@ jobs:
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/java/io/arkansasio/taskbarhero/MainActivity.java
           test -f scripts/stage-android-assets.mjs
+          test -f scripts/validate-visual-assets.mjs
+          test -f scripts/verify-apk-assets.mjs
           test -f docs/ANDROID_BUILD.md
+          test -f docs/VISUAL_ASSETS.md
           test -f README.md
           test -f docs/RPG_EXPANSION_DESIGN.md
           test -f docs/RPG_TEST_MATRIX.md
@@ -55,9 +60,9 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
