@@ -40,6 +40,11 @@ jobs:
           test -f src/game.js
           test -f src/config/heroClasses.js
           test -f src/state/GameState.js
+          test -f src/platform/browserBridge.js
+          test -f android/app/src/main/AndroidManifest.xml
+          test -f android/app/src/main/java/io/arkansasio/taskbarhero/MainActivity.java
+          test -f scripts/stage-android-assets.mjs
+          test -f docs/ANDROID_BUILD.md
           test -f README.md
           test -f docs/RPG_EXPANSION_DESIGN.md
           test -f docs/RPG_TEST_MATRIX.md
