@@ -16,123 +16,17 @@ import { startMarching, updateMarching } from './fx/WalkCycle.js';
 import { SpriteAnimation } from './fx/SpriteAnimation.js';
 import { ENEMY_SPRITE_SETS, SPRITE_SET_SCALE, spriteSetForRole } from './config/enemySprites.js';
 
-const app = new PIXI.Application({
-  resizeTo: document.getElementById('game-root'),
-  backgroundAlpha: 0,
-  antialias: false,
-});
+const app = new PIXI.Application({ resizeTo: document.getElementById('game-root'), backgroundAlpha: 0, antialias: false });
 document.getElementById('game-root').appendChild(app.view);
-
-const SPRITE_PATHS = {
-  knight: 'assets/hero-knight.png',
-  ranger: 'assets/hero-ranger.png',
-  priest: 'assets/hero-priest.png',
-  mage: 'assets/hero-mage.png',
-  enemy: 'assets/enemy-slime.png',
-};
-
-const WALK_SPRITE_PATHS = {
-  knight: ['assets/hero-knight-walk1.png', 'assets/hero-knight-walk2.png'],
-  ranger: ['assets/hero-ranger-walk1.png', 'assets/hero-ranger-walk2.png'],
-  priest: ['assets/hero-priest-walk1.png', 'assets/hero-priest-walk2.png'],
-  mage: ['assets/hero-mage-walk1.png', 'assets/hero-mage-walk2.png'],
-};
-
-const MARCH_DURATION = 0.5;
-const SPRITE_SCALE = 0.4;
-const SPRITE_SOURCE_SIZE = 96;
-const BACK_BASE_X = 20;
-const BACK_SLOT_SPACING = 30;
-const FRONT_BASE_X = 130;
-const FRONT_SLOT_SPACING = 30;
-const ENEMY_SLOT_SPACING = 34;
-const DEATH_FADE_DURATION = 0.3;
-const COLLISION_GAP = 16;
-const HEAVY_WINDUP_PULLBACK = 18;
-
-function spriteTopY(entry) { return entry.sprite.y - SPRITE_SOURCE_SIZE * entry.baseScale; }
-function makeHeroSprite(hero) {
-  const sprite = PIXI.Sprite.from(SPRITE_PATHS[hero.classId] ?? SPRITE_PATHS.knight);
-  sprite.scale.set(SPRITE_SCALE); sprite.anchor.set(0.5, 1); return sprite;
-}
-function makeEnemySprite(spriteSetKey) {
-  const idlePath = ENEMY_SPRITE_SETS[spriteSetKey].idle[0];
-  const sprite = PIXI.Sprite.from(idlePath);
-  sprite.scale.set(SPRITE_SET_SCALE[spriteSetKey]); sprite.anchor.set(0.5, 1); return sprite;
-}
-function getWalkTextures(classId) {
-  const paths = WALK_SPRITE_PATHS[classId];
-  if (!paths) return null;
-  return [PIXI.Texture.from(paths[0]), PIXI.Texture.from(paths[1])];
-}
-function enemySlotX(indexFromFront, waveSize, screenWidth) {
-  const rightEdge = screenWidth - 22;
-  return rightEdge - (waveSize - 1 - indexFromFront) * ENEMY_SLOT_SPACING;
-}
-
-async function main() {
-  const gameState = await SaveManager.load();
-  SaveManager.startAutosave(gameState);
-  const groundY = app.screen.height - 2;
-  const background = new Background(app, app.screen.width, app.screen.height, groundY);
-  const heroSprites = [];
-  function addHeroEntry(hero) {
-    const sprite = makeHeroSprite(hero);
-    const groupIndex = heroSprites.filter((e) => e.hero.formationLine === hero.formationLine).length;
-    const baseX = hero.formationLine === 'front' ? FRONT_BASE_X + groupIndex * FRONT_SLOT_SPACING : BACK_BASE_X + groupIndex * BACK_SLOT_SPACING;
-    sprite.x = baseX; sprite.y = groundY; app.stage.addChild(sprite);
-    const entry = { hero, sprite, baseScale: SPRITE_SCALE, baseTint: 0xffffff, hitTimer: 0, baseX, engagedTargetId: null, idleTexture: sprite.texture, walkTextures: getWalkTextures(hero.classId) };
-    entry.healthBar = new HealthBar(app.stage); heroSprites.push(entry); return entry;
-  }
-  gameState.party.forEach((hero) => addHeroEntry(hero));
-  let enemyEntries = [];
-  function findEnemyEntry(enemyId) { return enemyEntries.find((e) => e.enemyId === enemyId); }
-  const floatingText = new FloatingTextManager(app.stage);
-  const projectiles = new ProjectileManager(app.stage);
-  const impactSparks = new ImpactSparkManager(app.stage);
-  const coinBurst = new CoinBurstManager(app.stage);
-  const sound = new SoundManager(0.4);
-  const menuButton = new PIXI.Graphics();
-  menuButton.eventMode = 'static'; menuButton.cursor = 'pointer';
-  menuButton.beginFill(0x3a3648, 0.9); menuButton.lineStyle(1, 0x5a5570, 1); menuButton.drawRoundedRect(0, 0, 16, 14, 3); menuButton.endFill();
-  menuButton.beginFill(0xeae6f5); menuButton.drawRect(6, 4, 2, 2); menuButton.drawRect(9, 4, 2, 2); menuButton.endFill();
-  menuButton.x = 4; menuButton.y = 4; menuButton.on('pointertap', () => window.taskbarHero.openInventory()); app.stage.addChild(menuButton);
-  app.view.addEventListener('mouseenter', () => window.taskbarHero.setIgnoreMouse(false));
-  app.view.addEventListener('mouseleave', () => window.taskbarHero.setIgnoreMouse(true));
-  function serializeForInventory() {
-    const partyClassIds = new Set(gameState.party.map((h) => h.classId));
-    const recruitable = Object.entries(HERO_CLASSES).filter(([classId, def]) => def.recruitCost > 0 && !partyClassIds.has(classId)).map(([classId, def]) => ({ classId, label: def.label, cost: def.recruitCost }));
-    return { gold: gameState.gold, party: gameState.party.map((hero) => ({ id: hero.id, label: hero.label, classId: hero.classId, level: hero.level, hp: hero.hp, maxHp: hero.maxHp, equipment: hero.equipment })), inventory: gameState.inventory, recruitable, partyFull: gameState.party.length >= MAX_PARTY_SIZE };
-  }
-  window.taskbarHero.onProvideInventorySync(() => { window.taskbarHero.sendInventorySync(serializeForInventory()); });
-  window.taskbarHero.onEquipItem(({ heroId, itemId }) => {
-    const hero = gameState.party.find((h) => h.id === heroId); const itemIndex = gameState.inventory.findIndex((i) => i.id === itemId); if (!hero || itemIndex === -1) return;
-    const item = gameState.inventory[itemIndex]; if (!hero.canEquip(item)) return; gameState.inventory.splice(itemIndex, 1); const previouslyEquipped = hero.equipment[item.slot]; hero.equip(item); if (previouslyEquipped) gameState.inventory.push(previouslyEquipped); SaveManager.save(gameState); window.taskbarHero.sendInventorySync(serializeForInventory());
-  });
-  window.taskbarHero.onRecruitHero((classId) => {
-    const classDef = HERO_CLASSES[classId]; if (!classDef || classDef.recruitCost <= 0 || gameState.party.length >= MAX_PARTY_SIZE || gameState.party.some((h) => h.classId === classId) || gameState.gold < classDef.recruitCost) return;
-    gameState.gold -= classDef.recruitCost; gameState.addHero(classId); const newHero = gameState.party[gameState.party.length - 1]; addHeroEntry(newHero); SaveManager.save(gameState); window.taskbarHero.sendInventorySync(serializeForInventory());
-  });
-
-  // The remainder of the runtime is intentionally kept in the source repository;
-  // Android uses the same game.js runtime as desktop. This bootstrap is the
-  // Android-safe entry point and guarantees the WebView bridge is initialized.
-  app.ticker.add((ticker) => {
-    const dt = ticker.deltaMS / 1000;
-    for (const entry of heroSprites) updateHitFlash(entry, dt);
-    updateTravel(heroSprites, dt);
-    updateRangedAnim(heroSprites, dt);
-    updateMarching(heroSprites, dt, MARCH_DURATION);
-  });
-
-  window.taskbarHero.sendInventorySync(serializeForInventory());
-}
-
-main().catch((error) => {
-  console.error('Mo RPG Hero runtime failed to initialize.', error);
-  const root = document.getElementById('game-root');
-  if (root) {
-    root.dataset.runtimeError = 'true';
-    root.setAttribute('aria-label', 'Game runtime initialization failed');
-  }
-});
+const SPRITE_PATHS={knight:'assets/hero-knight.png',ranger:'assets/hero-ranger.png',priest:'assets/hero-priest.png',mage:'assets/hero-mage.png',enemy:'assets/enemy-slime.png'};
+const WALK_SPRITE_PATHS={knight:['assets/hero-knight-walk1.png','assets/hero-knight-walk2.png'],ranger:['assets/hero-ranger-walk1.png','assets/hero-ranger-walk2.png'],priest:['assets/hero-priest-walk1.png','assets/hero-priest-walk2.png'],mage:['assets/hero-mage-walk1.png','assets/hero-mage-walk2.png']};
+const MARCH_DURATION=.5,SPRITE_SCALE=.4,SPRITE_SOURCE_SIZE=96,BACK_BASE_X=20,BACK_SLOT_SPACING=30,FRONT_BASE_X=130,FRONT_SLOT_SPACING=30,ENEMY_SLOT_SPACING=34,DEATH_FADE_DURATION=.3,COLLISION_GAP=16,HEAVY_WINDUP_PULLBACK=18;
+const spriteTopY=e=>e.sprite.y-SPRITE_SOURCE_SIZE*e.baseScale;
+function makeHeroSprite(hero){const s=PIXI.Sprite.from(SPRITE_PATHS[hero.classId]??SPRITE_PATHS.knight);s.scale.set(SPRITE_SCALE);s.anchor.set(.5,1);return s;}
+function makeEnemySprite(k){const s=PIXI.Sprite.from(ENEMY_SPRITE_SETS[k].idle[0]);s.scale.set(SPRITE_SET_SCALE[k]);s.anchor.set(.5,1);return s;}
+function getWalkTextures(id){const p=WALK_SPRITE_PATHS[id];return p?[PIXI.Texture.from(p[0]),PIXI.Texture.from(p[1])]:null;}
+const enemySlotX=(i,n,w)=>w-22-(n-1-i)*ENEMY_SLOT_SPACING;
+async function main(){const gameState=await SaveManager.load();SaveManager.startAutosave(gameState);const groundY=app.screen.height-2;const background=new Background(app,app.screen.width,app.screen.height,groundY);const heroSprites=[];function addHeroEntry(hero){const sprite=makeHeroSprite(hero);const groupIndex=heroSprites.filter(e=>e.hero.formationLine===hero.formationLine).length;const baseX=hero.formationLine==='front'?FRONT_BASE_X+groupIndex*FRONT_SLOT_SPACING:BACK_BASE_X+groupIndex*BACK_SLOT_SPACING;sprite.x=baseX;sprite.y=groundY;app.stage.addChild(sprite);const entry={hero,sprite,baseScale:SPRITE_SCALE,baseTint:0xffffff,hitTimer:0,baseX,engagedTargetId:null,idleTexture:sprite.texture,walkTextures:getWalkTextures(hero.classId)};entry.healthBar=new HealthBar(app.stage);heroSprites.push(entry);return entry;}gameState.party.forEach(addHeroEntry);let enemyEntries=[];const findEnemyEntry=id=>enemyEntries.find(e=>e.enemyId===id);const floatingText=new FloatingTextManager(app.stage),projectiles=new ProjectileManager(app.stage),impactSparks=new ImpactSparkManager(app.stage),coinBurst=new CoinBurstManager(app.stage),sound=new SoundManager(.4);const menuButton=new PIXI.Graphics();menuButton.eventMode='static';menuButton.cursor='pointer';menuButton.beginFill(0x3a3648,.9);menuButton.lineStyle(1,0x5a5570,1);menuButton.drawRoundedRect(0,0,16,14,3);menuButton.endFill();menuButton.beginFill(0xeae6f5);menuButton.drawRect(6,4,2,2);menuButton.drawRect(9,4,2,2);menuButton.endFill();menuButton.x=4;menuButton.y=4;menuButton.on('pointertap',()=>window.taskbarHero.openInventory());app.stage.addChild(menuButton);app.view.addEventListener('mouseenter',()=>window.taskbarHero.setIgnoreMouse(false));app.view.addEventListener('mouseleave',()=>window.taskbarHero.setIgnoreMouse(true));function serializeForInventory(){const ids=new Set(gameState.party.map(h=>h.classId));const recruitable=Object.entries(HERO_CLASSES).filter(([id,d])=>d.recruitCost>0&&!ids.has(id)).map(([id,d])=>({classId:id,label:d.label,cost:d.recruitCost}));return{gold:gameState.gold,party:gameState.party.map(h=>({id:h.id,label:h.label,classId:h.classId,level:h.level,hp:h.hp,maxHp:h.maxHp,equipment:h.equipment})),inventory:gameState.inventory,recruitable,partyFull:gameState.party.length>=MAX_PARTY_SIZE};}window.taskbarHero.onProvideInventorySync(()=>window.taskbarHero.sendInventorySync(serializeForInventory()));window.taskbarHero.onEquipItem(({heroId,itemId})=>{const hero=gameState.party.find(h=>h.id===heroId),itemIndex=gameState.inventory.findIndex(i=>i.id===itemId);if(!hero||itemIndex===-1)return;const item=gameState.inventory[itemIndex];if(!hero.canEquip(item))return;gameState.inventory.splice(itemIndex,1);const old=hero.equipment[item.slot];hero.equip(item);if(old)gameState.inventory.push(old);SaveManager.save(gameState);window.taskbarHero.sendInventorySync(serializeForInventory());});window.taskbarHero.onRecruitHero(classId=>{const d=HERO_CLASSES[classId];if(!d||d.recruitCost<=0||gameState.party.length>=MAX_PARTY_SIZE||gameState.party.some(h=>h.classId===classId)||gameState.gold<d.recruitCost)return;gameState.gold-=d.recruitCost;gameState.addHero(classId);addHeroEntry(gameState.party[gameState.party.length-1]);SaveManager.save(gameState);window.taskbarHero.sendInventorySync(serializeForInventory());});
+function onGameEvent(event){if(event.type==='hero-attack'){const a=heroSprites.find(({hero})=>hero.id===event.source),t=findEnemyEntry(event.targetEnemyId);if(!a||!t)return;const impact=()=>{if(!enemyEntries.includes(t))return;floatingText.spawn(t.sprite.x,t.sprite.y-30,event.crit?`-${event.amount} CRIT!`:`-${event.amount}`,event.crit?0xffe066:0xffcc66);triggerHitFlash(t);triggerHitFlash(a);impactSparks.spawn(t.sprite.x,t.sprite.y-20,event.crit?0xffffff:0xffe8a3);if(event.crit)impactSparks.spawn(t.sprite.x,t.sprite.y-20,0xffe066);sound.play('hit-dealt');};if(a.hero.classId==='ranger'||a.hero.classId==='mage')startDrawAndRelease(a,1,()=>{if(enemyEntries.includes(t))projectiles.spawn(a.sprite.x,a.sprite.y-18,t.sprite.x,t.sprite.y-18,a.hero.classId==='mage'?0x8d70ff:0xd9b877,impact);});else if(a.engagedTargetId===event.targetEnemyId)impact();else{a.engagedTargetId=event.targetEnemyId;travelTo(a,Math.max(a.baseX,t.sprite.x-COLLISION_GAP),impact,a.hero.moveSpeed);}return;}if(event.type==='enemy-attack'){const a=findEnemyEntry(event.source),t=heroSprites.find(({hero})=>hero.id===event.target);if(!a||!t)return;const impact=(heavy,crit)=>{a.anim.play('attack',{loop:false,onComplete:()=>a.anim.play('idle')});floatingText.spawn(t.sprite.x,t.sprite.y-30,`-${event.amount}${heavy?'!!':''}${crit?' CRIT!':''}`,heavy?0xff3333:crit?0xffe066:0xff5f5f);triggerHitFlash(t);triggerHitFlash(a);impactSparks.spawn(t.sprite.x,t.sprite.y-20,heavy?0xffaa66:crit?0xffe066:0xff9999);if(heavy||crit)impactSparks.spawn(t.sprite.x,t.sprite.y-20,0xffffff);sound.play(heavy?'boss-heavy-hit':'hit-taken');};if(a.role==='archer')startDrawAndRelease(a,-1,()=>projectiles.spawn(a.sprite.x,a.sprite.y-18,t.sprite.x,t.sprite.y-18,0xb98bff,()=>impact(event.heavy,event.crit)));else if(a.engagedTargetId===event.target){if(event.heavy){const x=(a.restX??a.baseX)+HEAVY_WINDUP_PULLBACK;travelTo(a,x,()=>{if(!enemyEntries.includes(a))return;travelTo(a,Math.min(a.baseX,t.sprite.x+COLLISION_GAP),()=>{if(enemyEntries.includes(a))impact(true,event.crit);},a.moveSpeed);},a.moveSpeed);}else impact(false,event.crit);}else{a.engagedTargetId=event.target;travelTo(a,Math.min(a.baseX,t.sprite.x+COLLISION_GAP),()=>{if(enemyEntries.includes(a))impact(event.heavy,event.crit);},a.moveSpeed);}return;}if(event.type==='enemy-enraged'){const e=findEnemyEntry(event.enemyId);if(!e)return;e.baseTint=0xcc0000;floatingText.spawn(e.sprite.x,e.sprite.y-34,'ENRAGED!',0xff2222);sound.play('boss-enrage');background.pulse();return;}if(event.type==='enemy-killed'){const e=findEnemyEntry(event.enemyId);if(e&&!e.dying){e.dying=true;e.deathTimer=0;e.deathFadeDuration=e.anim.durationOf('dead')||DEATH_FADE_DURATION;e.anim.play('dead',{loop:false});e.healthBar.container.visible=false;coinBurst.spawn(e.sprite.x,e.sprite.y-15);}return;}if(event.type==='heal'){const t=heroSprites.find(({hero})=>hero.id===event.target);if(t)floatingText.spawn(t.sprite.x,t.sprite.y-30,`+${event.amount}`,0x6fe38a);return;}if(event.type==='level-up'){const t=heroSprites.find(({hero})=>hero.id===event.heroId);if(t)floatingText.spawn(t.sprite.x,t.sprite.y-30,'LEVEL UP!',0xffe066);sound.play('level-up');return;}if(event.type==='loot-drop'){floatingText.spawn(enemyEntries[0]?.sprite.x??app.screen.width-40,(enemyEntries[0]?.sprite.y??groundY)-30,event.item.label,0xb98bff);sound.play('loot-drop');return;}if(event.type==='wave-spawned'){heroSprites.forEach(e=>{if(e.engagedTargetId!==null){e.engagedTargetId=null;travelTo(e,e.baseX,null,e.hero.moveSpeed);}});heroSprites.forEach(e=>{if(e.hero.isAlive())startMarching(e,MARCH_DURATION);});enemyEntries.forEach(e=>{app.stage.removeChild(e.sprite);e.sprite.destroy();e.healthBar.destroy();});enemyEntries=[];background.pulse();background.setStage(event.stage);const n=event.enemies.length;event.enemies.forEach((enemy,i)=>{const baseX=enemySlotX(i,n,app.screen.width),key=spriteSetForRole(enemy.role),sprite=makeEnemySprite(key),boss=event.isBoss;const e={enemyId:enemy.id,sprite,role:enemy.role,moveSpeed:enemy.moveSpeed,baseScale:SPRITE_SET_SCALE[key]*(boss?1.35:1),baseTint:boss?0xff5555:0xffffff,hitTimer:0,baseX,dying:false,engagedTargetId:null};e.healthBar=new HealthBar(app.stage);e.anim=new SpriteAnimation(sprite,ENEMY_SPRITE_SETS[key]);const off=app.screen.width+24+i*16;sprite.y=groundY;sprite.x=off;e.spawnAnim={timer:-i*.08,duration:.35,fromX:off,toX:baseX};e.anim.play('walk');app.stage.addChild(sprite);enemyEntries.push(e);});if(event.isBoss)floatingText.spawn(app.screen.width/2,groundY-34,'BOSS INCOMING',0xff5555);}}
+app.ticker.add(()=>{const dt=app.ticker.deltaMS/1000;ProgressionSystem.simulate(gameState,dt,{allowChests:true,step:dt,onEvent:onGameEvent});heroSprites.forEach(e=>{const{hero,sprite}=e;sprite.alpha=hero.isAlive()?Math.max(.3,hero.hp/hero.maxHp):.15;e.healthBar.update(hero.hp/hero.maxHp,sprite.x,spriteTopY(e));});background.update(dt);projectiles.update(dt);impactSparks.update(dt);coinBurst.update(dt);floatingText.update(dt);heroSprites.forEach(e=>{updateHitFlash(e,dt);updateTravel(e,dt);updateRangedAnim(e,dt);updateMarching(e,dt,groundY,e.walkTextures,e.idleTexture);});for(let i=enemyEntries.length-1;i>=0;i--){const e=enemyEntries[i];e.anim.update(dt);if(e.dying){e.deathTimer+=dt;const t=Math.min(1,e.deathTimer/e.deathFadeDuration);e.sprite.alpha=1-t;e.sprite.scale.set(e.baseScale*(1-t*.3));if(t>=1){app.stage.removeChild(e.sprite);e.sprite.destroy();e.healthBar.destroy();enemyEntries.splice(i,1);}continue;}if(e.spawnAnim){const s=e.spawnAnim;s.timer+=dt;if(s.timer>=0){const t=Math.min(1,s.timer/s.duration),ease=1-Math.pow(1-t,2);e.sprite.x=s.fromX+(s.toX-s.fromX)*ease;if(t>=1){e.spawnAnim=null;e.anim.play('idle');}}}const enemy=gameState.enemies.find(x=>x.id===e.enemyId);if(enemy){e.sprite.alpha=Math.max(.2,enemy.hp/enemy.maxHp);e.healthBar.update(enemy.hp/enemy.maxHp,e.sprite.x,spriteTopY(e));}updateHitFlash(e,dt);if(!e.spawnAnim){updateTravel(e,dt);updateRangedAnim(e,dt);}}});}
+main().catch(error=>{console.error('Mo RPG Hero runtime failed to initialize.',error);const root=document.getElementById('game-root');if(root)root.setAttribute('aria-label','Game runtime initialization failed');});
