@@ -1,0 +1,12 @@
+{
+  "product": "Mo RPG Hero",
+  "version": "0.3.1",
+  "versionCode": 4,
+  "buildId": "dev-0.3.1",
+  "buildNumber": 0,
+  "patch": "development",
+  "commit": "development",
+  "sourceRevision": 0,
+  "channel": "development",
+  "releaseAsset": "mobile-rpg-web-latest.zip"
+}
