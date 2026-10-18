@@ -81,3 +81,98 @@ canvas { display: block; width: 100%; height: 100%; }
   height: 100%;
   min-height: 0;
   object-fit: contain;
+  image-rendering: auto;
+  background: #11151a;
+}
+
+.fantasy-asset-panel {
+  position: fixed;
+  top: max(54px, calc(env(safe-area-inset-top) + 48px));
+  right: max(6px, env(safe-area-inset-right));
+  left: auto;
+  width: min(92vw, 360px);
+  max-height: calc(100dvh - 66px - env(safe-area-inset-bottom));
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #8f7448;
+  border-radius: 10px;
+  background: #0c0f13f5;
+  box-shadow: 0 10px 40px #000b;
+  overflow: hidden;
+}
+.fantasy-asset-panel[hidden] { display: none; }
+.fantasy-asset-panel__header {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 12px;
+  color: #e6d4ad;
+  background: linear-gradient(#2b2116, #15110d);
+  border-bottom: 1px solid #8f7448;
+  font: 700 13px Georgia, serif;
+}
+.fantasy-asset-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.fantasy-asset-card {
+  min-width: 0;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid #473b2b;
+  border-radius: 7px;
+  background: #151a20;
+  color: #d8c39a;
+  cursor: pointer;
+  font: 700 10px system-ui, sans-serif;
+  touch-action: manipulation;
+}
+.fantasy-asset-card:hover,
+.fantasy-asset-card.is-selected {
+  border-color: #c19a5b;
+  background: #272016;
+}
+.fantasy-asset-card small { color: #8e9aa8; font-size: 8px; text-transform: uppercase; }
+.fantasy-asset-card__sprite {
+  width: 40px;
+  height: 40px;
+  display: block;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  image-rendering: pixelated;
+}
+.fantasy-asset-card__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+@media (max-width: 520px) {
+  .fantasy-asset-panel { width: calc(100vw - 12px); right: 6px; }
+  .fantasy-asset-panel__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fantasy-asset-card { min-height: 72px; font-size: 9px; }
+}
+
+@media (max-width: 380px) {
+  .fantasy-asset-panel__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 6px; }
+  .fantasy-asset-card { min-height: 70px; }
+  .rpg-command-button { padding: 7px 8px; }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .fantasy-codex { inset: 4px; }
+  .fantasy-codex__bar { min-height: 38px; }
+  .fantasy-asset-panel { top: max(48px, calc(env(safe-area-inset-top) + 42px)); max-height: calc(100dvh - 54px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
