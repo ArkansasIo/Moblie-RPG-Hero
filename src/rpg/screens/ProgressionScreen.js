@@ -1,0 +1,2 @@
+import {statGrid,panel} from '../MenuPanels.js';
+export function renderProgressionScreen(documentRef,data={}){const root=documentRef.createElement('div');root.className='rpg-screen progression-screen';root.append(panel(documentRef,'Progression','Level and endgame progression'));root.append(statGrid(documentRef,{Level:data.level??1,XP:data.xp??0,Mastery:data.mastery??0,GearScore:data.gearScore??0,Research:data.research??0}));return root}
