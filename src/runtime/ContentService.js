@@ -1,4 +1,4 @@
-import { BIOMES, ZONE_CONTENT, MATERIALS, NPCS, STATUS_EFFECTS, TALENT_TREES, ACHIEVEMENTS, LOOT_TABLES, TOWER } from '../data/index.js';
+import { BIOMES, ZONE_CONTENT, MATERIALS, NPCS, STATUS_EFFECTS, TALENT_TREES, ACHIEVEMENTS, LOOT_TABLES, TOWER, ASSET_MANIFEST, FANTASY_STYLE } from '../data/index.js';
 import { WORLD_BIOMES, WORLD_ZONES, DUNGEONS, TRAILS, RAIDS, TOWER_FLOORS, WORLD_CONTENT } from '../rpg/worldData.js';
 
 const byId = (items = []) => new Map(items.map((item) => [item.id, item]));
@@ -20,6 +20,8 @@ export const CONTENT = Object.freeze({
   tower: TOWER,
   towerFloors: TOWER_FLOORS,
   world: WORLD_CONTENT,
+  assets: ASSET_MANIFEST,
+  fantasyStyle: FANTASY_STYLE,
 });
 
 export function getZone(id) { return WORLD_ZONES.find((zone) => zone.id === id) ?? null; }
@@ -28,6 +30,8 @@ export function getDungeon(id) { return DUNGEONS.find((dungeon) => dungeon.id ==
 export function getTrail(id) { return TRAILS.find((trail) => trail.id === id) ?? null; }
 export function getRaid(id) { return RAIDS.find((raid) => raid.id === id) ?? null; }
 export function getTowerFloor(floor) { return TOWER_FLOORS[floor - 1] ?? null; }
+export function getFantasyAsset(path) { return new URL(path, import.meta.url).href; }
+export function getFantasyAtlas() { return getFantasyAsset('../assets/generated/dnd5e-inspired-atlas.svg'); }
 
 export function availableZones(level) {
   return WORLD_ZONES.filter((zone) => level >= zone.level[0] && level <= zone.level[1] + 10);
@@ -54,6 +58,7 @@ export function contentSummary() {
     achievements: ACHIEVEMENTS.length,
     statusEffects: Object.keys(STATUS_EFFECTS).length,
     talentTrees: Object.keys(TALENT_TREES).length,
+    fantasyAssetAtlas: ASSET_MANIFEST.atlases.dnd5e,
   };
 }
 
