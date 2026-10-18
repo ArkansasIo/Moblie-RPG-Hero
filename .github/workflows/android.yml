@@ -101,9 +101,15 @@ jobs:
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME}
 
-      - name: Compile release APK
+      - name: Compile installable release APK
         working-directory: android
         run: gradle --no-daemon :app:assembleRelease -PbuildVersionCode=${VERSION_CODE} -PbuildVersionName=${VERSION_NAME}
+
+      - name: Verify APK signatures
+        run: |
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          "$BUILD_TOOLS/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose android/app/build/outputs/apk/release/app-release.apk
 
       - name: Package current web build for in-app updater
         run: |
@@ -119,12 +125,20 @@ jobs:
         run: |
           mkdir -p release
           cp android/app/build/outputs/apk/debug/app-debug.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-debug.apk"
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-unsigned.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "release/Mo-RPG-Hero-Android-${VERSION_NAME}-release.apk"
           sha256sum release/*.apk > release/SHA256SUMS.txt
           cp mobile-rpg-web-latest.zip release/mobile-rpg-web-latest.zip
           cp mobile-rpg-web-latest.sha256 release/mobile-rpg-web-latest.sha256
           cp src/build-info.json release/build-info.json
-          printf 'Mo RPG Hero\nVersion: %s\nBuild ID: %s\nPatch: %s\nSource revision: %s\nCommit: %s\n' "$VERSION_NAME" "$BUILD_ID" "$PATCH" "$SOURCE_REVISION" "$GITHUB_SHA" > release/BUILD_INFO.txt
+          printf 'Mo RPG Hero\nVersion: %s\nBuild ID: %s\nPatch: %s\nSource revision: %s\nCommit: %s\nSigning: CI test/release APK is Android-debug-key signed for direct device installation.\n' "$VERSION_NAME" "$BUILD_ID" "$PATCH" "$SOURCE_REVISION" "$GITHUB_SHA" > release/BUILD_INFO.txt
+
+      - name: Upload installable release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mo-rpg-hero-android-release-${{ env.VERSION_NAME }}
+          path: release/Mo-RPG-Hero-Android-${{ env.VERSION_NAME }}-release.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
