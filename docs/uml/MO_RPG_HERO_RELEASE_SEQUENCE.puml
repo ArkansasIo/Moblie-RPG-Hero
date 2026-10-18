@@ -1,0 +1,51 @@
+@startuml Mo_RPG_Hero_Release_Sequence
+
+title Mo RPG Hero — GitHub to Mobile Release Sequence
+
+actor Developer
+participant GitHub
+participant CI as "GitHub Actions"
+participant Release as "GitHub Release"
+participant Host as "Android Host"
+participant Client as "Joining Android Client"
+participant Game as "Game Runtime"
+participant DB as "Host Persistence"
+
+Developer -> GitHub: push source change
+GitHub -> CI: trigger validation/build
+CI -> CI: npm install
+CI -> CI: stage Android assets
+CI -> CI: compile debug APK
+CI -> CI: compile release APK
+CI --> GitHub: artifacts + build result
+
+Developer -> GitHub: push vX.Y.Z tag
+GitHub -> CI: trigger release workflow
+CI -> CI: build release APK
+CI -> CI: generate release metadata
+CI -> Release: publish artifact + notes + checksum
+
+Host -> Release: check compatible version
+Release --> Host: release manifest
+Host -> Release: download package/content
+Host -> Host: verify checksum/signature
+Host -> Host: stage update
+Host -> Host: apply compatible update
+Host -> Game: restart/load new runtime
+Game -> DB: migrate persistent state
+DB --> Game: migrated state
+
+Client -> Host: connect/join request
+Host -> Client: protocol/content version
+Client -> Host: compatible
+Host -> Client: session state
+Client -> Game: initialize synchronized state
+
+alt incompatible client
+  Host -> Client: reject + required version
+else migration failure
+  Game -> DB: report migration failure
+  DB --> Game: rollback/retain prior state
+end
+
+@enduml
