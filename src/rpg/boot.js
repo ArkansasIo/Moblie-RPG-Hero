@@ -15,6 +15,34 @@ button.title = 'Open RPG/MMORPG Command Center';
 button.onclick = () => menu.toggle();
 document.body.appendChild(button);
 
+function addMobileUpdateButton() {
+  const update = document.createElement('button');
+  update.className = 'rpg-command-button mobile-update-button';
+  update.type = 'button';
+  update.textContent = 'UPDATE';
+  update.title = 'Check GitHub for the latest Mo RPG Hero build';
+  update.addEventListener('click', () => {
+    if (window.AndroidBridge?.updateFromGitHub) {
+      update.disabled = true;
+      update.textContent = 'CHECKING…';
+      window.AndroidBridge.updateFromGitHub();
+      window.setTimeout(() => { update.disabled = false; update.textContent = 'UPDATE'; }, 5000);
+    } else {
+      window.open('https://github.com/ArkansasIo/Moblie-RPG-Hero/releases', '_blank', 'noopener,noreferrer');
+    }
+  });
+  document.body.appendChild(update);
+
+  fetch('./build-info.json', { cache: 'no-store' })
+    .then(response => response.ok ? response.json() : null)
+    .then(info => {
+      if (!info) return;
+      update.title = `Build ${info.version} • ${info.buildId} • patch ${info.patch}`;
+      update.setAttribute('aria-label', `Update Mo RPG Hero. Current build ${info.version}, ${info.buildId}`);
+    })
+    .catch(() => {});
+}
+
 function addFantasyAssetPanel() {
   const panel = document.createElement('aside');
   panel.className = 'fantasy-asset-panel';
@@ -43,5 +71,6 @@ function addFantasyAssetPanel() {
   panel.hidden = true; document.body.appendChild(panel);
 }
 
+addMobileUpdateButton();
 addFantasyAssetPanel();
 window.taskbarHeroRPG = { menu };
