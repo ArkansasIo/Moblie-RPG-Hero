@@ -6,9 +6,9 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.js && node --check preload.js && node --check preload-inventory.js",
-    "dist": "electron-builder --win nsis",
-    "dist:dir": "electron-builder --dir",
+    "check": "node --check main.js && node --check preload.js && node --check preload-inventory.js && node --check --input-type=module < src/game.js",
+    "dist": "npx --yes electron-builder@24.13.3 --win nsis",
+    "dist:dir": "npx --yes electron-builder@24.13.3 --dir",
     "sync-lockfile": "node scripts/sync-lockfile.mjs",
     "prepare:lock": "node scripts/sync-lockfile.mjs"
   },
@@ -17,5 +17,40 @@
   },
   "dependencies": {
     "pixi.js": "^7.4.2"
+  },
+  "build": {
+    "appId": "io.arkansasio.taskbarhero",
+    "productName": "Taskbar Hero",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "preload-inventory.js",
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Taskbar-Hero-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Taskbar Hero"
+    }
   }
 }
