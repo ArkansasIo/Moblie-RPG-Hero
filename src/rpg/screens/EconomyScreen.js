@@ -1,0 +1,2 @@
+import {list,panel,statGrid} from '../MenuPanels.js';
+export function renderEconomyScreen(documentRef,{market=[],auctions=[],vendors=[],currencies={}}={}){const root=documentRef.createElement('div');root.className='rpg-screen economy-screen';root.append(statGrid(documentRef,currencies));root.append(panel(documentRef,'Marketplace',list(documentRef,market)));root.append(panel(documentRef,'Auction House',list(documentRef,auctions)));root.append(panel(documentRef,'Vendors',list(documentRef,vendors)));return root}
