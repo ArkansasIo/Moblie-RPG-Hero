@@ -1,0 +1,178 @@
+@startuml Mo_RPG_Hero_Database
+hide methods
+hide stereotypes
+skinparam linetype ortho
+
+title Mo RPG Hero — Logical Database UML
+
+entity Player {
+  * player_id : UUID
+  --
+  display_name
+  created_at
+  last_login
+  schema_version
+}
+
+entity Character {
+  * character_id : UUID
+  --
+  player_id : UUID
+  class_id
+  level
+  xp
+  zone_id
+}
+
+entity CharacterStats {
+  * character_id : UUID
+  --
+  str
+  dex
+  con
+  int
+  wis
+  vit
+  spi
+  lck
+  wil
+  cha
+}
+
+entity Item {
+  * item_id : UUID
+  --
+  definition_id
+  rarity
+  level
+  stats_json
+  created_at
+}
+
+entity InventorySlot {
+  * slot_id : UUID
+  --
+  character_id
+  item_id
+  container
+  quantity
+}
+
+entity Equipment {
+  * equipment_id : UUID
+  --
+  character_id
+  slot
+  item_id
+}
+
+entity QuestProgress {
+  * progress_id : UUID
+  --
+  character_id
+  quest_id
+  state
+  objective_json
+}
+
+entity ZoneProgress {
+  * zone_progress_id : UUID
+  --
+  character_id
+  zone_id
+  completion
+}
+
+entity CurrencyLedger {
+  * transaction_id : UUID
+  --
+  player_id
+  currency_type
+  amount
+  reason
+  created_at
+}
+
+entity Party {
+  * party_id : UUID
+  --
+  leader_player_id
+  encounter_id
+}
+
+entity PartyMember {
+  * party_member_id : UUID
+  --
+  party_id
+  player_id
+  role
+}
+
+entity Guild {
+  * guild_id : UUID
+  --
+  name
+  leader_player_id
+}
+
+entity GuildMember {
+  * guild_member_id : UUID
+  --
+  guild_id
+  player_id
+  rank
+}
+
+entity Mail {
+  * mail_id : UUID
+  --
+  sender_player_id
+  receiver_player_id
+  payload_json
+  claimed
+}
+
+entity Trade {
+  * trade_id : UUID
+  --
+  buyer_player_id
+  seller_player_id
+  item_id
+  currency_amount
+  state
+}
+
+entity ReleaseManifest {
+  * manifest_id : UUID
+  --
+  app_version
+  version_code
+  content_version
+  schema_version
+  checksum
+  minimum_client_version
+}
+
+Player ||--o{ Character
+Character ||--|| CharacterStats
+Character ||--o{ InventorySlot
+Character ||--o{ Equipment
+InventorySlot }o--|| Item
+Equipment }o--|| Item
+Character ||--o{ QuestProgress
+Character ||--o{ ZoneProgress
+Player ||--o{ CurrencyLedger
+Party ||--o{ PartyMember
+Player ||--o{ PartyMember
+Guild ||--o{ GuildMember
+Player ||--o{ GuildMember
+Player ||--o{ Mail : sends/receives
+Player ||--o{ Trade
+Item ||--o{ Trade
+
+note bottom of ReleaseManifest
+The logical model is shared between
+server MySQL deployments and the
+Android embedded/mobile persistence
+implementation through migrations.
+@enduml
