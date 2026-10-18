@@ -3,7 +3,7 @@
     <application
         android:allowBackup="true"
         android:label="Mo RPG Hero"
-        android:description="Mo RPG Hero RPG/MMORPG — Version 0.3.0 — Developed by ArkansasIo"
+        android:description="@string/app_description"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
