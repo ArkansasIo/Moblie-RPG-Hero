@@ -8,14 +8,8 @@ html, body {
   user-select: none;
 }
 
-#game-root {
-  width: 100%;
-  height: 100%;
-}
-
-canvas {
-  display: block;
-}
+#game-root { width: 100%; height: 100%; }
+canvas { display: block; }
 
 .rpg-command-button {
   position: fixed;
@@ -45,9 +39,7 @@ canvas {
   box-shadow: 0 10px 40px #000b;
   overflow: hidden;
 }
-
 .fantasy-codex[hidden] { display: none; }
-
 .fantasy-codex__bar {
   min-height: 28px;
   display: flex;
@@ -59,7 +51,6 @@ canvas {
   color: #d8c39a;
   font: 700 12px Georgia, serif;
 }
-
 .fantasy-codex__bar button {
   border: 0;
   background: transparent;
@@ -68,7 +59,6 @@ canvas {
   line-height: 1;
   cursor: pointer;
 }
-
 .fantasy-codex img {
   display: block;
   width: 100%;
@@ -77,4 +67,84 @@ canvas {
   object-fit: contain;
   image-rendering: auto;
   background: #11151a;
+}
+
+.fantasy-asset-panel {
+  position: fixed;
+  top: 32px;
+  right: 4px;
+  width: min(92vw, 360px);
+  max-height: calc(100vh - 40px);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #8f7448;
+  border-radius: 6px;
+  background: #0c0f13f5;
+  box-shadow: 0 10px 40px #000b;
+  overflow: hidden;
+}
+.fantasy-asset-panel[hidden] { display: none; }
+.fantasy-asset-panel__header {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  color: #e6d4ad;
+  background: linear-gradient(#2b2116, #15110d);
+  border-bottom: 1px solid #8f7448;
+  font: 700 12px Georgia, serif;
+}
+.fantasy-asset-panel__header button {
+  border: 0;
+  background: transparent;
+  color: #d8c39a;
+  font-size: 20px;
+  cursor: pointer;
+}
+.fantasy-asset-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  padding: 6px;
+  overflow: auto;
+}
+.fantasy-asset-card {
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid #473b2b;
+  border-radius: 4px;
+  background: #151a20;
+  color: #d8c39a;
+  cursor: pointer;
+  font: 700 9px system-ui, sans-serif;
+}
+.fantasy-asset-card:hover,
+.fantasy-asset-card.is-selected {
+  border-color: #c19a5b;
+  background: #272016;
+}
+.fantasy-asset-card small {
+  color: #8e9aa8;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+.fantasy-asset-card__sprite {
+  width: 42px;
+  height: 42px;
+  display: block;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  image-rendering: pixelated;
+}
+.fantasy-asset-card__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+@media (max-width: 520px) {
+  .fantasy-asset-panel { width: calc(100vw - 8px); right: 4px; }
+  .fantasy-asset-panel__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
