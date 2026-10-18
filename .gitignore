@@ -27,3 +27,6 @@ build-win.log
 # OS noise
 Thumbs.db
 .DS_Store
+# electron-builder transient logs
+dist-build*.log
+dist-dir-build.log
