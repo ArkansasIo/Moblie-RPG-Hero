@@ -1,0 +1,60 @@
+name: Taskbar Hero Android Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build Android release package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm install
+
+      - name: Stage game assets
+        run: npm run android:assets
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build unsigned release APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Rename APK with version
+        run: cp android/app/build/outputs/apk/release/app-release-unsigned.apk Taskbar-Hero-Android-${GITHUB_REF_NAME#v}-unsigned.apk
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            # Taskbar Hero ${{ github.ref_name }}
+
+            Developer: ArkansasIo
+            Android application ID: io.arkansasio.taskbarhero
+
+            This release contains the unsigned Android APK. Android requires a release signing key for production distribution; install the debug APK from workflow artifacts for local testing.
+          files: Taskbar-Hero-Android-*-unsigned.apk
