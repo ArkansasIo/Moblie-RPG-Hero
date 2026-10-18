@@ -1,8 +1,7 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from '../../node_modules/pixi.js/dist/pixi.mjs';
 
-const RISE_SPEED = 18; // px/sec
-const LIFETIME = 0.7; // seconds
-
+const RISE_SPEED = 18;
+const LIFETIME = 0.7;
 const STYLE_CACHE = {};
 
 function styleFor(color) {
@@ -19,11 +18,6 @@ function styleFor(color) {
   return STYLE_CACHE[color];
 }
 
-/**
- * Manages a pool of floating combat-text instances (damage numbers, heals).
- * Rendering-only - has no opinion about game rules, just draws numbers that
- * rise and fade.
- */
 export class FloatingTextManager {
   constructor(stage) {
     this.stage = stage;
@@ -33,7 +27,7 @@ export class FloatingTextManager {
   spawn(x, y, text, color = 0xffffff) {
     const label = new PIXI.Text(text, styleFor(color));
     label.anchor.set(0.5, 1);
-    label.x = x + (Math.random() * 10 - 5); // slight horizontal jitter so stacked hits don't overlap exactly
+    label.x = x + (Math.random() * 10 - 5);
     label.y = y;
     this.stage.addChild(label);
     this.active.push({ label, life: LIFETIME });
@@ -45,7 +39,6 @@ export class FloatingTextManager {
       entry.life -= deltaSeconds;
       entry.label.y -= RISE_SPEED * deltaSeconds;
       entry.label.alpha = Math.max(0, entry.life / LIFETIME);
-
       if (entry.life <= 0) {
         this.stage.removeChild(entry.label);
         entry.label.destroy();
