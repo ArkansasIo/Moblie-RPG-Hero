@@ -1,0 +1,22 @@
+{
+  "name": "mo-rpg-hero",
+  "engine": "electron",
+  "build": {
+    "cmd": "npm run check"
+  },
+  "launch": {
+    "cmd": "node_modules\\electron\\dist\\electron.exe",
+    "args": [
+      "."
+    ]
+  },
+  "log": {
+    "stdout": true
+  },
+  "ready": "ready|Listening|loaded|Electron",
+  "sourceRoots": [
+    "src",
+    ".",
+    "scripts"
+  ]
+}

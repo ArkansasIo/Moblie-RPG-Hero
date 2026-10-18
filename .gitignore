@@ -30,3 +30,6 @@ Thumbs.db
 # electron-builder transient logs
 dist-build*.log
 dist-dir-build.log
+
+# Runtime logs
+*.log

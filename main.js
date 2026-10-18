@@ -1,4 +1,17 @@
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const electron = require('electron');
+// In Electron's main process `require('electron')` resolves to the API object.
+// If a stray local `node_modules/electron` shim (which only exports the .exe
+// path as a string) wins resolution, we would get a string back and every
+// `app`/`BrowserWindow` use below would crash. Fail loudly and early instead.
+if (typeof electron !== 'object' || !electron.app) {
+  console.error(
+    'FATAL: require("electron") returned ' + typeof electron +
+    ' instead of the Electron API. The app must be started with the Electron\n' +
+    'binary (npm start), not plain node. Resolved to: ' + require.resolve('electron')
+  );
+  process.exit(1);
+}
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } = electron;
 const path = require('path');
 const fs = require('fs');
 

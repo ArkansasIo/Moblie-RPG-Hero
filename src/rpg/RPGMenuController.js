@@ -6,7 +6,9 @@ import {loadMenuState,saveMenuState} from './MenuPersistence.js';
 import {getPageData} from './MenuPageData.js';
 import {getScreenRenderer} from './ScreenRegistry.js';
 import {menuNotifications} from './MenuNotifications.js';
-import './rpg-menu-components.css';
+// NOTE: CSS is linked via <link> tags in src/index.html. Importing a .css file
+// from a JS module fails in Electron's file:// loader with a strict MIME-type
+// error (the server responds with text/css, not text/javascript).
 
 export class RPGMenuController {
   constructor({documentRef=document,storage=globalThis.localStorage,root=null,state=null,getState=null}={}) {
