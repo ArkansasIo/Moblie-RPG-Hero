@@ -1,5 +1,6 @@
 export const GAME_VERSION = Object.freeze({
-  name: 'Taskbar Hero',
+  name: 'Mo RPG Hero',
+  previousName: 'Taskbar Hero',
   version: '0.3.0',
   versionCode: 3,
   channel: 'release-candidate',
