@@ -1,0 +1,2 @@
+import {list,panel} from '../MenuPanels.js';
+export function renderCollectionsScreen(documentRef,{mounts=[],pets=[],cosmetics=[],recipes=[]}={}){const root=documentRef.createElement('div');root.className='rpg-screen collections-screen';root.append(panel(documentRef,'Mounts',list(documentRef,mounts)));root.append(panel(documentRef,'Pets',list(documentRef,pets)));root.append(panel(documentRef,'Cosmetics',list(documentRef,cosmetics)));root.append(panel(documentRef,'Recipes',list(documentRef,recipes)));return root}
