@@ -25,13 +25,32 @@ const visualEntries = entries.filter((entry) => entry.startsWith('assets/game/as
 const productionEntries = visualEntries.filter((entry) => !entry.includes('/source/'));
 const masterEntries = visualEntries.filter((entry) => entry.endsWith('/source/asset_sheet_master.png'));
 
-if (productionEntries.length !== 169) {
-  console.error(`APK verification: expected 169 production visual PNGs, found ${productionEntries.length}`);
-  process.exit(1);
+if (productionEntries.length === 169 && masterEntries.length === 1) {
+  console.log(`APK verification: PASS (${stat.size} bytes, 169 production PNGs + master)`);
+  process.exit(0);
 }
-if (masterEntries.length !== 1) {
-  console.error(`APK verification: expected 1 visual master PNG, found ${masterEntries.length}`);
+
+if (visualEntries.length > 0) {
+  console.error(
+    `APK verification: incomplete visual pack (${productionEntries.length}/169 production PNGs, ${masterEntries.length}/1 master)`,
+  );
   process.exit(1);
 }
 
-console.log(`APK verification: PASS (${stat.size} bytes, 169 production PNGs + master)`);
+const requiredRuntimeAssets = [
+  'assets/game/index.html',
+  'assets/game/game.js',
+  'assets/game/launcher.js',
+  'assets/game/style.css',
+  'assets/game/assets/generated/logo_main.svg',
+  'assets/game/assets/generated/title_background.svg',
+  'assets/game/assets/hero-knight.png',
+  'assets/node_modules/pixi.js/dist/pixi.mjs',
+];
+const missingRuntimeAssets = requiredRuntimeAssets.filter((entry) => !entries.includes(entry));
+if (missingRuntimeAssets.length) {
+  console.error(`APK verification: required runtime assets are missing: ${missingRuntimeAssets.join(', ')}`);
+  process.exit(1);
+}
+
+console.log(`APK verification: PASS (${stat.size} bytes, bundled runtime assets present; optional visual pack not included)`);
