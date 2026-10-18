@@ -1,5 +1,6 @@
 import { createRPGMenu } from './RPGMenuController.js';
 import { FANTASY_ASSET_CATALOG } from './FantasyAssetCatalog.js';
+import { EXTENDED_ASSET_CATALOG, EXTENDED_ASSET_COUNTS } from './ExtendedAssetCatalog.js';
 
 const menu = createRPGMenu({
   state: (() => {
@@ -32,14 +33,9 @@ function addMobileUpdateButton() {
     }
   });
   document.body.appendChild(update);
-
   fetch('./build-info.json', { cache: 'no-store' })
     .then(response => response.ok ? response.json() : null)
-    .then(info => {
-      if (!info) return;
-      update.title = `Build ${info.version} • ${info.buildId} • patch ${info.patch}`;
-      update.setAttribute('aria-label', `Update Mo RPG Hero. Current build ${info.version}, ${info.buildId}`);
-    })
+    .then(info => { if (!info) return; update.title = `Build ${info.version} • ${info.buildId} • patch ${info.patch}`; update.setAttribute('aria-label', `Update Mo RPG Hero. Current build ${info.version}, ${info.buildId}`); })
     .catch(() => {});
 }
 
@@ -51,8 +47,7 @@ function addFantasyAssetPanel() {
   const grid = panel.querySelector('.fantasy-asset-panel__grid');
   const close = panel.querySelector('.fantasy-asset-panel__header button');
   const command = document.createElement('button');
-  command.className = 'rpg-command-button fantasy-assets-button'; command.textContent = 'ASSETS';
-  command.title = 'Open fantasy class, equipment, monster and biome assets'; document.body.appendChild(command);
+  command.className = 'rpg-command-button fantasy-assets-button'; command.textContent = 'ASSETS'; command.title = 'Open fantasy class, equipment, monster and biome assets'; document.body.appendChild(command);
   let rendered = false;
   const renderAssets = () => {
     if (rendered) return; rendered = true;
@@ -71,6 +66,43 @@ function addFantasyAssetPanel() {
   panel.hidden = true; document.body.appendChild(panel);
 }
 
+function addExtendedAssetPanel() {
+  const panel = document.createElement('aside');
+  panel.className = 'fantasy-asset-panel extended-asset-panel';
+  panel.setAttribute('aria-label', 'Extended Mo RPG Hero asset catalog');
+  const counts = Object.entries(EXTENDED_ASSET_COUNTS).map(([category, count]) => `${category}: ${count}`).join(' • ');
+  panel.innerHTML = `<div class="fantasy-codex__bar"><strong>Mo RPG Hero — Extended Asset Vault</strong><button type="button" aria-label="Close extended assets">×</button></div><div class="extended-asset-summary">${EXTENDED_ASSET_CATALOG.length} catalogued assets • ${counts}</div><div class="extended-asset-filters"></div><div class="fantasy-asset-panel__grid"></div>`;
+  const grid = panel.querySelector('.fantasy-asset-panel__grid');
+  const filters = panel.querySelector('.extended-asset-filters');
+  const close = panel.querySelector('.fantasy-codex__bar button');
+  const command = document.createElement('button');
+  command.className = 'rpg-command-button extended-assets-button'; command.textContent = 'ASSET VAULT'; command.title = 'Open the complete extended RPG asset catalog'; document.body.appendChild(command);
+  const categories = ['all', ...Object.keys(EXTENDED_ASSET_COUNTS)];
+  let selectedCategory = 'all';
+  const render = () => {
+    grid.textContent = '';
+    const assets = selectedCategory === 'all' ? EXTENDED_ASSET_CATALOG : EXTENDED_ASSET_CATALOG.filter(asset => asset.category === selectedCategory);
+    const fragment = document.createDocumentFragment();
+    for (const asset of assets) {
+      const card = document.createElement('button'); card.type = 'button'; card.className = 'fantasy-asset-card extended-asset-card'; card.title = asset.path;
+      card.innerHTML = `<span class="extended-asset-card__icon" aria-hidden="true">✦</span><span class="fantasy-asset-card__name">${asset.name}</span><small>${asset.category}</small>`;
+      card.addEventListener('click', () => { window.taskbarHeroExtendedAssets = { selected: asset, select: id => EXTENDED_ASSET_CATALOG.find(entry => entry.id === id) ?? null }; for (const other of grid.querySelectorAll('.fantasy-asset-card')) other.classList.remove('is-selected'); card.classList.add('is-selected'); });
+      fragment.appendChild(card);
+    }
+    grid.appendChild(fragment);
+  };
+  for (const category of categories) {
+    const filter = document.createElement('button'); filter.type = 'button'; filter.className = 'extended-asset-filter'; filter.textContent = category === 'all' ? `ALL (${EXTENDED_ASSET_CATALOG.length})` : `${category.toUpperCase()} (${EXTENDED_ASSET_COUNTS[category]})`;
+    filter.addEventListener('click', () => { selectedCategory = category; for (const item of filters.children) item.classList.remove('is-selected'); filter.classList.add('is-selected'); render(); }); filters.appendChild(filter);
+  }
+  filters.firstElementChild?.classList.add('is-selected');
+  close.addEventListener('click', () => { panel.hidden = true; });
+  command.addEventListener('click', () => { panel.hidden = !panel.hidden; if (!panel.hidden) render(); });
+  panel.hidden = true; document.body.appendChild(panel);
+}
+
 addMobileUpdateButton();
 addFantasyAssetPanel();
+addExtendedAssetPanel();
 window.taskbarHeroRPG = { menu };
+window.taskbarHeroAssetCatalog = EXTENDED_ASSET_CATALOG;
