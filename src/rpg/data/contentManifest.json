@@ -1,0 +1,23 @@
+{
+  "product":"Mo RPG Hero",
+  "assetPackVersion":1,
+  "levelCap":720,
+  "categories":{
+    "monsters":40,
+    "bosses":20,
+    "weapons":40,
+    "equipment":32,
+    "consumables":32,
+    "scenery":32,
+    "zones":8,
+    "biomes":8,
+    "dungeons":9,
+    "raids":8,
+    "trials":8
+  },
+  "progressionBands":12,
+  "towerFloorsPerTower":100,
+  "runtimeLoader":"rpg/AssetContentLoader.js",
+  "sourceCatalog":"rpg/data/assetContentCatalog.json",
+  "progression":"rpg/data/levelProgression720.json"
+}
