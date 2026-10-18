@@ -19,3 +19,4 @@ export * from './achievements.js';
 export * from './lootTables.js';
 export * from './maps.js';
 export * from './saveSchema.js';
+export * from './contentRegistry.js';
