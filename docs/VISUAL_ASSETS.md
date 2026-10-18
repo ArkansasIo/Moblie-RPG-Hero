@@ -1,6 +1,6 @@
 # Mo RPG Hero Visual Pack v1
 
-The Android release visual pack is `mo-rpg-hero-generated-assets-v1`.
+The optional Android visual enhancement pack is `mo-rpg-hero-generated-assets-v1`. Android builds do not require the pack: when it is absent, the game uses the SVG and pixel-art assets already bundled in `src/`.
 
 ## Inventory
 
@@ -15,7 +15,7 @@ The Android release visual pack is `mo-rpg-hero-generated-assets-v1`.
 
 ## Import
 
-Place the generated ZIP at:
+For a build that includes the full pack, place the generated ZIP at:
 
 ```text
 assets/import/mo-rpg-hero-generated-assets-v1.zip
@@ -29,7 +29,7 @@ npm run validate:visual
 npm run android:assets
 ```
 
-The Android staging step copies the validated production pack into:
+When present, Android staging copies the validated production pack into:
 
 ```text
 android/app/src/main/assets/game/assets/visual/
@@ -37,13 +37,13 @@ android/app/src/main/assets/game/assets/visual/
 
 ## APK verification
 
-After building a release APK, verify the embedded pack with:
+When the full pack is included, verify it in the APK with:
 
 ```bash
 node scripts/verify-apk-assets.mjs android/app/build/outputs/apk/release/app-release.apk
 ```
 
-The verifier requires exactly 169 production PNGs plus the master PNG under `assets/game/assets/visual/`.
+The verifier checks for exactly 169 production PNGs plus the master PNG under `assets/game/assets/visual/`. If the optional pack is absent, it instead verifies that the built-in game entry point, renderer, launcher art, hero sprite, and PixiJS runtime are included.
 
 ## Reproducibility note
 
