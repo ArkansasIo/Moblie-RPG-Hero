@@ -1,10 +1,14 @@
 // Browser/Android fallback for the Electron IPC bridge.
-// Electron's preload.js still supplies the real bridge in the desktop build.
+// Electron's preload.js supplies the real bridge in the desktop build.
 // Android packages src/ inside a WebView and persists its save locally.
 (function installBrowserBridge() {
   if (window.taskbarHero) return;
 
   const SAVE_KEY = 'taskbar-hero-save-v1';
+  let inventorySnapshot = null;
+  let inventorySyncRequestHandler = null;
+  let equipItemHandler = null;
+  let recruitHeroHandler = null;
 
   window.taskbarHero = {
     async loadGame() {
@@ -18,21 +22,20 @@
         return null;
       }
     },
-
     async saveGame(data) {
-      try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-      } catch (error) {
-        console.error('Unable to save Taskbar Hero progress.', error);
-        throw error;
-      }
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); }
+      catch (error) { console.error('Unable to save Taskbar Hero progress.', error); throw error; }
     },
-
     setIgnoreMouse() {},
-
-    openInventory() {
-      window.location.href = 'inventory.html';
-    },
+    openInventory() { window.location.href = 'inventory.html'; },
+    onProvideInventorySync(handler) { inventorySyncRequestHandler = handler; },
+    sendInventorySync(snapshot) { inventorySnapshot = snapshot ?? null; },
+    onEquipItem(handler) { equipItemHandler = handler; },
+    onRecruitHero(handler) { recruitHeroHandler = handler; },
+    getLastInventorySnapshot() { return inventorySnapshot; },
+    requestInventorySync() { inventorySyncRequestHandler?.(); },
+    requestEquipItem(payload) { equipItemHandler?.(payload); },
+    requestRecruitHero(classId) { recruitHeroHandler?.(classId); },
   };
 
   let syncHandler = null;
@@ -40,16 +43,13 @@
 
   async function loadState() {
     const [{ GameState }, { HERO_CLASSES, MAX_PARTY_SIZE }] = await Promise.all([
-      import('./state/GameState.js'),
-      import('./config/heroClasses.js'),
+      import('../state/GameState.js'),
+      import('../config/heroClasses.js'),
     ]);
     const saved = await window.taskbarHero.loadGame();
-    // GameState.fromSave assumes any saved party is an array.
-    // Recover safely from older/corrupted saves without breaking the UI.
     let state;
-    try {
-      state = GameState.fromSave(saved);
-    } catch (error) {
+    try { state = GameState.fromSave(saved); }
+    catch (error) {
       console.warn('Unable to load saved party; using a fresh game state.', error);
       state = new GameState();
     }
@@ -65,7 +65,6 @@
       const recruitable = Object.entries(HERO_CLASSES)
         .filter(([classId, def]) => def.recruitCost > 0 && !partyClasses.has(classId))
         .map(([classId, def]) => ({ classId, label: def.label, cost: def.recruitCost }));
-
       syncHandler({
         gold: state.gold,
         partyFull: state.party.length >= MAX_PARTY_SIZE,
@@ -73,24 +72,15 @@
         recruitable,
         inventory: state.inventory,
       });
-    } finally {
-      syncInFlight = false;
-    }
+    } finally { syncInFlight = false; }
   }
 
   window.inventoryBridge = {
-    onSyncData(handler) {
-      syncHandler = handler;
-    },
-
+    onSyncData(handler) { syncHandler = handler; },
     async requestSync() {
-      try {
-        await syncInventory();
-      } catch (error) {
-        console.error('Unable to refresh Taskbar Hero inventory.', error);
-      }
+      try { await syncInventory(); }
+      catch (error) { console.error('Unable to refresh Taskbar Hero inventory.', error); }
     },
-
     async recruitHero(classId) {
       try {
         const { state, HERO_CLASSES, MAX_PARTY_SIZE } = await loadState();
@@ -102,11 +92,8 @@
         state.addHero(classId);
         await window.taskbarHero.saveGame(state.serialize());
         await syncInventory();
-      } catch (error) {
-        console.error('Unable to recruit hero.', error);
-      }
+      } catch (error) { console.error('Unable to recruit hero.', error); }
     },
-
     async equipItem(heroId, itemId) {
       try {
         const { state } = await loadState();
@@ -115,9 +102,7 @@
         if (!hero || !item || typeof hero.equip !== 'function' || !hero.equip(item)) return;
         await window.taskbarHero.saveGame(state.serialize());
         await syncInventory();
-      } catch (error) {
-        console.error('Unable to equip item.', error);
-      }
+      } catch (error) { console.error('Unable to equip item.', error); }
     },
   };
 })();
