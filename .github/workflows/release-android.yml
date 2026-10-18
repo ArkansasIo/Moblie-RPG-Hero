@@ -1,4 +1,4 @@
-name: Taskbar Hero Android Release
+name: Mo RPG Hero Android Release
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    name: Build Android release package
+    name: Build Mo RPG Hero Android release package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,17 +44,18 @@ jobs:
         run: gradle --no-daemon :app:assembleRelease
 
       - name: Rename APK with version
-        run: cp android/app/build/outputs/apk/release/app-release-unsigned.apk Taskbar-Hero-Android-${GITHUB_REF_NAME#v}-unsigned.apk
+        run: cp android/app/build/outputs/apk/release/app-release-unsigned.apk Mo-RPG-Hero-Android-${GITHUB_REF_NAME#v}-unsigned.apk
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           body: |
-            # Taskbar Hero ${{ github.ref_name }}
+            # Mo RPG Hero ${{ github.ref_name }}
 
             Developer: ArkansasIo
             Android application ID: io.arkansasio.taskbarhero
+            Patch pipeline: GitHub source → CI → Android package → GitHub Release → mobile update flow
 
-            This release contains the unsigned Android APK. Android requires a release signing key for production distribution; install the debug APK from workflow artifacts for local testing.
-          files: Taskbar-Hero-Android-*-unsigned.apk
+            This release contains the unsigned Android APK. Android requires a release signing key for production distribution; use a properly signed production artifact for trusted public distribution.
+          files: Mo-RPG-Hero-Android-*-unsigned.apk
