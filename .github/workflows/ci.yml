@@ -29,7 +29,7 @@ jobs:
       - name: Check renderer module syntax
         run: |
           node --check --input-type=module < src/game.js
-          node --check src/inventory.js
+          node --check --input-type=module < src/inventory.js
       - name: Verify required application files
         run: |
           test -f main.js
@@ -41,6 +41,8 @@ jobs:
           test -f src/config/heroClasses.js
           test -f src/state/GameState.js
           test -f README.md
+          test -f docs/RPG_EXPANSION_DESIGN.md
+          test -f docs/RPG_TEST_MATRIX.md
 
   windows-installer:
     name: Package Windows installer
