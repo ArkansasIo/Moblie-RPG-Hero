@@ -8,6 +8,7 @@ on:
       - 'android/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/**'
       - '.github/workflows/android.yml'
   pull_request:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - 'android/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/**'
       - '.github/workflows/android.yml'
   workflow_dispatch:
 
@@ -83,6 +85,17 @@ jobs:
       - name: Validate RPG JavaScript source
         run: npm run check:rpg
 
+      - name: Report visual asset inventory
+        shell: bash
+        run: |
+          count=$(find src/assets/visual -type f -iname '*.png' ! -path '*/source/*' 2>/dev/null | wc -l | tr -d ' ')
+          echo "Production visual PNGs in repository: ${count}"
+          if [ "${count}" = "169" ]; then
+            echo "Full 169-PNG visual pack is present."
+          else
+            echo "Visual pack is not fully present in repository; Android build will use the checked-in/fallback assets."
+          fi
+
       - name: Stage web game into Android assets
         run: npm run android:assets
 
@@ -110,6 +123,10 @@ jobs:
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
           "$BUILD_TOOLS/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
           "$BUILD_TOOLS/apksigner" verify --verbose android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Verify full visual pack inside release APK
+        if: ${{ hashFiles('src/assets/visual/**/*.png') != '' }}
+        run: node scripts/verify-apk-assets.mjs android/app/build/outputs/apk/release/app-release.apk
 
       - name: Package current web build for in-app updater
         run: |
