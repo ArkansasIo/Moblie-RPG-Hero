@@ -22,13 +22,59 @@ canvas {
   top: 4px;
   right: 4px;
   z-index: 10000;
-  border: 1px solid #4d6684;
+  border: 1px solid #8f7448;
   border-radius: 4px;
-  background: #101b2a;
-  color: #a9defc;
+  background: #17130f;
+  color: #d8c39a;
   padding: 4px 7px;
   font: 700 9px system-ui, sans-serif;
   cursor: pointer;
   box-shadow: 0 2px 8px #0008;
 }
-.rpg-command-button:hover { background: #19304a; color: #fff; }
+.rpg-command-button:hover { background: #332719; color: #fff2c7; }
+
+.fantasy-codex {
+  position: fixed;
+  inset: 8px;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #8f7448;
+  border-radius: 6px;
+  background: #0c0f13ee;
+  box-shadow: 0 10px 40px #000b;
+  overflow: hidden;
+}
+
+.fantasy-codex[hidden] { display: none; }
+
+.fantasy-codex__bar {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  background: linear-gradient(#2b2116, #15110d);
+  border-bottom: 1px solid #8f7448;
+  color: #d8c39a;
+  font: 700 12px Georgia, serif;
+}
+
+.fantasy-codex__bar button {
+  border: 0;
+  background: transparent;
+  color: #d8c39a;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.fantasy-codex img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  image-rendering: auto;
+  background: #11151a;
+}
