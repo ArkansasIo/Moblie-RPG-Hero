@@ -1,0 +1,78 @@
+name: Android APK Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  JAVA_VERSION: '17'
+  NODE_VERSION: '20'
+  GRADLE_VERSION: '8.10.2'
+
+jobs:
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm install
+
+      - name: Stage Android assets
+        run: npm run android:assets
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build debug APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Build unsigned release APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Rename APKs
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/Mo-RPG-Hero-Android-0.3.0-debug.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk release/Mo-RPG-Hero-Android-0.3.0-unsigned.apk
+          sha256sum release/*.apk > release/SHA256SUMS.txt
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mo-rpg-hero-android-apk
+          path: release/*
+          retention-days: 30
+
+      - name: Publish GitHub release for tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release/Mo-RPG-Hero-Android-0.3.0-debug.apk
+            release/Mo-RPG-Hero-Android-0.3.0-unsigned.apk
+            release/SHA256SUMS.txt
