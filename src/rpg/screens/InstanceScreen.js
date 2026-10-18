@@ -1,0 +1,2 @@
+import {list,panel,statGrid} from '../MenuPanels.js';
+export function renderInstanceScreen(documentRef,{dungeons=[],raids=[],tower=[]}={}){const root=documentRef.createElement('div');root.className='rpg-screen instance-screen';root.append(panel(documentRef,'Dungeons',list(documentRef,dungeons)));root.append(panel(documentRef,'Raids',list(documentRef,raids)));root.append(panel(documentRef,'Tower',list(documentRef,tower)));root.append(statGrid(documentRef,{TowerFloors:100,DungeonModes:4,RaidSizes:'8/10/20/40'}));return root}
