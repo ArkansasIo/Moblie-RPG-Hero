@@ -1,0 +1,65 @@
+name: Build and test Taskbar Hero
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check main-process JavaScript syntax
+        run: npm run check
+      - name: Check renderer module syntax
+        run: |
+          node --check src/game.js
+          node --check src/inventory.js
+      - name: Verify required application files
+        run: |
+          test -f main.js
+          test -f preload.js
+          test -f preload-inventory.js
+          test -f src/index.html
+          test -f src/inventory.html
+          test -f src/game.js
+          test -f README.md
+
+  windows-installer:
+    name: Package Windows installer
+    runs-on: windows-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build NSIS installer
+        run: npm run dist
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: taskbar-hero-windows-installer
+          path: dist/*.exe
+          if-no-files-found: error
+          retention-days: 14
