@@ -1,0 +1,10 @@
+{
+  "pack": "mo-rpg-hero-generated-assets-v1",
+  "productionCount": 169,
+  "masterAssets": ["source/asset_sheet_master.png"],
+  "productionRoot": ".",
+  "rules": {
+    "include": "**/*.png",
+    "exclude": ["source/**"]
+  }
+}
