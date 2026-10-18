@@ -38,6 +38,8 @@ jobs:
           test -f src/index.html
           test -f src/inventory.html
           test -f src/game.js
+          test -f src/config/heroClasses.js
+          test -f src/state/GameState.js
           test -f README.md
 
   windows-installer:
