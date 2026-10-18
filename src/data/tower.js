@@ -1,0 +1,3 @@
+export const TOWER=Object.freeze(Array.from({length:100},(_,i)=>{const floor=i+1,tier=Math.ceil(floor/10),boss=floor%10===0;return{floor,tier,type:boss?'boss':floor%5===0?'elite':'combat',level:floor,theme:['forest','plains','desert','frost','swamp','volcanic','storm','arcane','void','paradox'][tier-1],rewardTier:tier}}));
+export function getFloor(floor){return TOWER[floor-1]||null}
+export function canEnterFloor(level,floor){const f=getFloor(floor);return Boolean(f&&level>=f.level)}
