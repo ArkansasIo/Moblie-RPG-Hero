@@ -2,24 +2,60 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#07101c" />
   <title>Mobile RPG Hero — MMORPG Adventure</title>
   <link rel="stylesheet" href="style.css" />
   <script src="platform/browserBridge.js"></script>
   <script type="importmap">
-    {"imports":{"pixi.js":"../node_modules/pixi.js/dist/pixi.mjs"}}
+    {"imports":{"pixi.js":"/assets/node_modules/pixi.js/dist/pixi.mjs"}}
   </script>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#07101c;color:#eae6f5;overflow:hidden}
+    #android-startup{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#07101c;font-family:system-ui,sans-serif;text-align:center}
+    #android-startup .box{max-width:520px;padding:32px}
+    #android-startup h1{margin:0 0 10px;font-size:28px}
+    #android-startup p{margin:8px 0;opacity:.8}
+    #android-startup button{margin-top:18px;padding:12px 24px;border:1px solid #6d638c;border-radius:8px;background:#211d31;color:#fff;font-weight:700}
+    #android-error{display:none;white-space:pre-wrap;margin-top:18px;text-align:left;font-size:12px;opacity:.8;max-height:180px;overflow:auto}
+  </style>
 </head>
 <body>
   <div id="game-root"></div>
+  <div id="android-startup">
+    <div class="box">
+      <h1>Mobile RPG Hero</h1>
+      <p id="android-startup-status">Starting game engine…</p>
+      <button id="android-startup-retry" type="button" hidden>RETRY</button>
+      <div id="android-error"></div>
+    </div>
+  </div>
   <button id="fantasy-codex-button" class="rpg-command-button" type="button" aria-label="Open fantasy asset codex">CODEX</button>
   <button id="mobile-update-button" class="rpg-command-button mobile-update-button" type="button" aria-label="Check for updates">UPDATE</button>
   <section id="fantasy-codex" class="fantasy-codex" hidden aria-label="Fantasy asset codex">
     <div class="fantasy-codex__bar"><strong>Fantasy Codex</strong><button id="fantasy-codex-close" type="button" aria-label="Close fantasy codex">×</button></div>
     <img src="assets/generated/dnd5e-inspired-atlas.svg" alt="Fantasy RPG asset atlas" />
   </section>
-  <script type="module" src="launcher.js"></script>
+  <script>
+    (() => {
+      const startup = document.getElementById('android-startup');
+      const status = document.getElementById('android-startup-status');
+      const retry = document.getElementById('android-startup-retry');
+      const errorBox = document.getElementById('android-error');
+      const showError = (message) => {
+        if (!errorBox) return;
+        errorBox.textContent = String(message || 'Unknown startup error');
+        errorBox.style.display = 'block';
+        retry.hidden = false;
+        status.textContent = 'Game engine failed to start.';
+      };
+      window.addEventListener('error', event => showError(event.error?.stack || event.message));
+      window.addEventListener('unhandledrejection', event => showError(event.reason?.stack || event.reason));
+      retry.addEventListener('click', () => location.reload());
+      window.__androidStartupReady = () => { startup.style.display = 'none'; };
+    })();
+  </script>
+  <script src="launcher.js"></script>
   <script type="module" src="game.js"></script>
   <script type="module" src="rpg/boot.js"></script>
   <script>
