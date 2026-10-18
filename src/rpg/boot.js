@@ -40,33 +40,43 @@ function addFantasyAssetPanel() {
   command.title = 'Open fantasy class, equipment, monster and biome assets';
   document.body.appendChild(command);
 
-  for (const asset of FANTASY_ASSET_CATALOG) {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'fantasy-asset-card';
-    card.title = asset.description;
-    card.innerHTML = `
-      <span class="fantasy-asset-card__sprite" aria-hidden="true"></span>
-      <span class="fantasy-asset-card__name">${asset.name}</span>
-      <small>${asset.category}</small>
-    `;
-    const sprite = card.querySelector('.fantasy-asset-card__sprite');
-    sprite.style.backgroundImage = `url("${asset.sheet}")`;
-    sprite.style.backgroundSize = '500% 100%';
-    sprite.style.backgroundPosition = `${asset.frame * 25}% 50%`;
-    card.addEventListener('click', () => {
-      window.taskbarHeroFantasy = {
-        selected: asset,
-        select: (id) => FANTASY_ASSET_CATALOG.find((entry) => entry.id === id) ?? null
-      };
-      for (const other of grid.querySelectorAll('.fantasy-asset-card')) other.classList.remove('is-selected');
-      card.classList.add('is-selected');
-    });
-    grid.appendChild(card);
-  }
+  let rendered = false;
+  const renderAssets = () => {
+    if (rendered) return;
+    rendered = true;
+    const fragment = document.createDocumentFragment();
+    for (const asset of FANTASY_ASSET_CATALOG) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'fantasy-asset-card';
+      card.title = asset.description;
+      card.innerHTML = `
+        <span class="fantasy-asset-card__sprite" aria-hidden="true"></span>
+        <span class="fantasy-asset-card__name">${asset.name}</span>
+        <small>${asset.category}</small>
+      `;
+      const sprite = card.querySelector('.fantasy-asset-card__sprite');
+      sprite.style.backgroundImage = `url("${asset.sheet}")`;
+      sprite.style.backgroundSize = '500% 100%';
+      sprite.style.backgroundPosition = `${asset.frame * 25}% 50%`;
+      card.addEventListener('click', () => {
+        window.taskbarHeroFantasy = {
+          selected: asset,
+          select: (id) => FANTASY_ASSET_CATALOG.find((entry) => entry.id === id) ?? null
+        };
+        for (const other of grid.querySelectorAll('.fantasy-asset-card')) other.classList.remove('is-selected');
+        card.classList.add('is-selected');
+      });
+      fragment.appendChild(card);
+    }
+    grid.appendChild(fragment);
+  };
 
   close.addEventListener('click', () => { panel.hidden = true; });
-  command.addEventListener('click', () => { panel.hidden = !panel.hidden; });
+  command.addEventListener('click', () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) renderAssets();
+  });
   panel.hidden = true;
   document.body.appendChild(panel);
 }
