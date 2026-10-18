@@ -9,6 +9,10 @@
     "check": "node --check main.js && node --check preload.js && node --check preload-inventory.js && node --check --input-type=module < src/game.js",
     "dist": "npx --yes electron-builder@24.13.3 --win nsis",
     "dist:dir": "npx --yes electron-builder@24.13.3 --dir",
+    "android:assets": "node scripts/stage-android-assets.mjs",
+    "android:apk": "npm run android:assets && npm run android:apk:debug && npm run android:apk:release",
+    "android:apk:debug": "cd android && gradle :app:assembleDebug",
+    "android:apk:release": "cd android && gradle :app:assembleRelease",
     "sync-lockfile": "node scripts/sync-lockfile.mjs",
     "prepare:lock": "node scripts/sync-lockfile.mjs"
   },

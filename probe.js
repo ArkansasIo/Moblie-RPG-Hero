@@ -1,0 +1,1 @@
+const e = require('electron'); console.log('TYPE=' + typeof e); console.log('IS_STRING=' + (typeof e === 'string')); console.log('KEYS=' + (e && typeof e === 'object' ? Object.keys(e).slice(0,12).join(',') : 'n/a')); console.log('RESOLVED=' + require.resolve('electron'));

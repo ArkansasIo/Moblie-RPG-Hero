@@ -1,1 +1,28 @@
 node_modules/
+
+# Electron packaging output (electron-builder)
+dist/
+
+# Android / Gradle build output
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Build staging assets generated at build time (see scripts/stage-android-assets.mjs)
+android/app/src/main/assets/game/
+android/app/src/main/assets/node_modules/
+
+# Local probe/debug logs
+probe-out.log
+probe-err.log
+run-out.log
+run-err.log
+
+# OS noise
+Thumbs.db
+.DS_Store

@@ -41,12 +41,7 @@ jobs:
         run: npm install
 
       - name: Stage web game into Android assets
-        shell: bash
-        run: |
-          rm -rf android/app/src/main/assets
-          mkdir -p android/app/src/main/assets/node_modules
-          cp -R src android/app/src/main/assets/game
-          cp -R node_modules/pixi.js android/app/src/main/assets/node_modules/pixi.js
+        run: npm run android:assets
 
       - name: Setup Java
         uses: actions/setup-java@v4

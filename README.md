@@ -687,6 +687,22 @@ npm run dist
 
 The installer is written to `dist/`. GitHub Actions also validates pushed changes and produces a downloadable Windows installer artifact on pushes to `main` and manual workflow runs. The artifact is not a GitHub Release; publish a release separately when you are ready to distribute a version.
 
+Create the Android APK with:
+
+```bash
+npm run android:apk        # stages assets, then assembles debug + release
+```
+
+The APKs are written to `android/app/build/outputs/apk/`. Requirements and runtime details are in `docs/ANDROID_BUILD.md`.
+
+### Build output folder
+
+`output/` is the hand-off location for finished binaries — `output/windows/` for
+the Electron installer, `output/android/` for the APKs. See `output/README.md`
+for what goes where. The compiled binaries themselves are git-ignored; only the
+per-platform READMEs are committed, so the repository stays small and the
+artifacts come from GitHub Actions or a GitHub Release instead.
+
 ### Current build notes
 
 - Renderer code uses native ES modules and the import map in `src/index.html`; it is intentionally not bundled by the current build.
