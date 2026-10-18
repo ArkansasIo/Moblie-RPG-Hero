@@ -1,0 +1,18 @@
+{
+  "game": "Mo RPG Hero",
+  "version": 1,
+  "levelCap": 720,
+  "content": {
+    "monsters": ["Slime","Goblin","Orc","Skeleton","Zombie","Bandit","Wolf","Dire Wolf","Boar","Spider","Bat","Scorpion","Lizardman","Kobold","Harpy","Specter","Wraith","Ghoul","Demon","Cultist","Dark Knight","Golem","Minotaur","Troll","Ogre","Beholder","Succubus","Manticore","Wyvern","Basilisk","Naga","Medusa","Lich","Reaper","Elemental","Treant","Vampire","Werewolf","Dragon","Ancient Dragon"],
+    "bosses": ["Fire Dragon","Frost Dragon","Storm Dragon","Void Dragon","Ancient Lich","Demon Lord","Shadow King","Celestial Guardian","Titan","World Serpent","Chaos Beast","Death Knight","Fallen Angel","Elemental Lord","Time Dragon","Abyss Lord","Crystal Colossus","Elder God","Inferno Titan","Nexus Dragon"],
+    "weapons": ["Iron Sword","Steel Sword","Crystal Sword","Flame Blade","Frost Blade","Thunder Sword","Dark Blade","Holy Sword","Short Bow","Long Bow","Elven Bow","Dragon Bow","Crossbow","Magic Bow","Demon Bow","Celestial Bow","Axe","Battle Axe","Great Axe","Hammer","Warhammer","Mace","Spear","Halberd","Staff","Fire Staff","Ice Staff","Lightning Staff","Dark Staff","Holy Staff","Nature Staff","Void Staff","Dagger","Twin Blades","Scythe","Claws","Katana","Ninja Blade","Whip","Throwing Stars"],
+    "equipment": ["Cloth Set","Leather Set","Chain Set","Iron Set","Steel Set","Knight Set","Royal Set","Dragon Set","Rogue Set","Ranger Set","Assassin Set","Monk Set","Paladin Set","Dark Set","Chaos Set","Celestial Set","Shield Set","Magic Set","Fire Set","Frost Set","Storm Set","Void Set","Ancient Set","Mythic Set","Ring","Amulet","Belt","Cloak","Boots","Gloves","Bracers","Crown"],
+    "consumables": ["HP Potion","MP Potion","Stamina Potion","EXP Potion","Strength Elixir","Defense Elixir","Speed Potion","Luck Potion","Heal Scroll","Teleport Scroll","Revive Scroll","Skill Book","Talent Book","Stat Book","Quest Item","Key Item","Gold Coin","Silver Coin","Gem Ruby","Gem Sapphire","Gem Emerald","Gem Topaz","Gem Amethyst","Gem Diamond","Food","Meat","Fish","Herb","Ore","Crystal","Treasure Chest","Magic Orb"],
+    "scenery": ["Tree","Pine Tree","Dead Tree","Bush","Grass","Flower","Rock","Large Rock","Fence","Wood Crate","Barrel","Wooden Bridge","Stone Bridge","Torch","Lantern","Campfire","Tent","Banner","Sign Post","Well","Cart","Market Stall","Watch Tower","Statue","Ruins Pillar","Stone Arch","Gate","Wall","Spikes","Trap","Portal","Obelisk"],
+    "zones": ["Greenwood Plains","Crystal Mountains","Sunken Ruins","Volcanic Wastes","Frost Tundra","Desert Sands","Dark Forest","Sky Islands"],
+    "biomes": ["Forest","Mountain","Desert","Snow","Swamp","Lava","Sky","Underworld"],
+    "dungeons": ["Ancient Ruins","Crystal Cave","Lava Fortress","Ice Cavern","Undead Crypt","Demon Temple","Forgotten Mine","Forgotten Gate","Abyss Gate"],
+    "raids": ["Dragon Lair","Elemental Core","Void Rift","Celestial Tower","Chaos Realm","Titan Spire","World Tree","Elder God"],
+    "trials": ["Tower of Light","Tower of Darkness","Tower of Elements","Tower of Time","Tower of Chaos","Ascension Tower","Eternal Spire","Nexus Tower"]
+  }
+}
