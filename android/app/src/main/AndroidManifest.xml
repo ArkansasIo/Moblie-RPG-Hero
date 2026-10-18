@@ -3,6 +3,7 @@
     <application
         android:allowBackup="true"
         android:label="Taskbar Hero"
+        android:description="Taskbar Hero RPG/MMORPG — Version 0.3.0 — Developed by ArkansasIo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
