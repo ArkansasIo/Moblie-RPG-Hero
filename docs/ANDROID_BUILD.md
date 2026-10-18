@@ -14,7 +14,7 @@ The Android build packages the existing PixiJS game in a native Android WebView.
 From the repository root:
 
 ```bash
-npm install
+npm ci --omit=dev
 npm run android:assets
 cd android
 gradle --no-daemon :app:assembleDebug
@@ -27,14 +27,15 @@ Installable debug APK:
 Unsigned release APK:
 `android/app/build/outputs/apk/release/app-release-unsigned.apk`
 
-The debug APK is intended for testing and sideloading. The release APK produced by this workflow is unsigned, so sign it with your own release key before distribution via stores or as a trusted production release.
+The 169-PNG visual pack is optional. When the import archive is absent, the build validates and packages the SVG and pixel-art assets already in `src/`. The debug APK is intended for testing and sideloading. A release APK requires a persistent signing key before trusted public distribution.
 
 ## GitHub Actions
 
-Open [Build Android APK](https://github.com/ArkansasIo/taskbar-hero/actions/workflows/android.yml). Each successful run uploads these artifacts for 30 days:
+Open [Build Android APK](https://github.com/ArkansasIo/Moblie-RPG-Hero/actions/workflows/android.yml). Each successful run uploads these artifacts for 30 days:
 
-- `taskbar-hero-android-debug`: installable debug APK ZIP
-- `taskbar-hero-android-release-unsigned`: unsigned release APK ZIP
+- `mo-rpg-hero-android-debug-<version>`: installable debug APK
+- `mo-rpg-hero-android-ci-release-<version>`: installable CI-signed APK for testing; it uses a unique package ID and is not a production-signing key
+- `mo-rpg-hero-build-<version>`: APKs, build metadata, and the web update package
 
 Run the workflow manually from the Actions tab, or push changes in `src/`, `android/`, `package.json`, or `package-lock.json`.
 
