@@ -1,0 +1,2 @@
+import {list,panel} from '../MenuPanels.js';
+export function renderPvpScreen(documentRef,{arena=[],battlegrounds=[],ranked=[]}={}){const root=documentRef.createElement('div');root.className='rpg-screen pvp-screen';root.append(panel(documentRef,'Arena',list(documentRef,arena)));root.append(panel(documentRef,'Battlegrounds',list(documentRef,battlegrounds)));root.append(panel(documentRef,'Ranked',list(documentRef,ranked)));return root}
