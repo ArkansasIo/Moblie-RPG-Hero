@@ -31,4 +31,6 @@ export * from './MenuDialogs.js';
 export * from './MenuNotifications.js';
 export * from './MenuTooltip.js';
 export * from './MenuPageData.js';
+export * from './ScreenRegistry.js';
+export * from './screens/index.js';
 export * from './RPGMenuController.js';
