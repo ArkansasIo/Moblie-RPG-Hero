@@ -1,0 +1,8 @@
+import {MENU_DEFINITIONS,getPageMeta} from './MenuDefinitions.js';
+export function createMenuRenderer({documentRef=document}={}){
+  const el=(tag,cls,text='')=>{const n=documentRef.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n};
+  function button(label,onClick,active=false){const b=el('button',active?'menu-item active':'menu-item',label);b.type='button';b.addEventListener('click',onClick);return b}
+  function renderNav(state,onNavigate){const nav=el('nav','menu-sidebar');Object.entries(MENU_DEFINITIONS).forEach(([id,group])=>{const section=el('section','menu-section');const head=button(`${group.icon} ${group.label}`,()=>onNavigate({menu:id,page:group.pages[0]}),state.menu===id);section.appendChild(head);if(state.menu===id){const list=el('div','menu-submenu');group.pages.forEach(page=>list.appendChild(button(page,()=>onNavigate({menu:id,page}),state.page===page)));section.appendChild(list)}nav.appendChild(section)});return nav}
+  function renderPage(state,actions={}){const meta=getPageMeta(state.page);const main=el('main','menu-page');const header=el('header','menu-page-header');const title=el('h1','',state.page||'Menu');const subtitle=el('p','',meta?`${meta.menu} system`:'RPG/MMORPG system');header.append(title,subtitle);main.appendChild(header);const toolbar=el('div','menu-toolbar');[['Back',actions.back],['Refresh',actions.refresh],['Close',actions.close]].forEach(([label,fn])=>{if(fn)toolbar.appendChild(button(label,fn))});main.appendChild(toolbar);const body=el('section','menu-page-body');body.dataset.page=meta?.id??'unknown';main.appendChild(body);return main}
+  return {renderNav,renderPage};
+}
