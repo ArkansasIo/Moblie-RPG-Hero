@@ -4,12 +4,13 @@ import {createMenuSearch} from './MenuSearch.js';
 import {installMenuHotkeys} from './MenuHotkeys.js';
 import {loadMenuState,saveMenuState} from './MenuPersistence.js';
 import {getPageData} from './MenuPageData.js';
+import {getScreenRenderer} from './ScreenRegistry.js';
 import {menuNotifications} from './MenuNotifications.js';
 import './rpg-menu-components.css';
 
 export class RPGMenuController {
-  constructor({documentRef=document,storage=globalThis.localStorage,root=null,state=null}={}) {
-    this.documentRef=documentRef; this.storage=storage;
+  constructor({documentRef=document,storage=globalThis.localStorage,root=null,state=null,getState=null}={}) {
+    this.documentRef=documentRef; this.storage=storage; this.getState=getState??(()=>({}));
     const saved=state??loadMenuState(storage);
     this.router=new MenuRouter(saved?.menu&&saved?.page?{menu:saved.menu,page:saved.page}:undefined);
     this.renderer=createMenuRenderer({documentRef});
@@ -18,6 +19,7 @@ export class RPGMenuController {
     this.unsubscribe=null; this.removeHotkeys=null; this.search=null;
   }
   mount(target=this.root) {
+    this.unsubscribe?.(); this.removeHotkeys?.();
     this.root=target; this.root.classList.add('rpg-menu-shell','is-closed'); this.root.replaceChildren();
     const layout=this.documentRef.createElement('div'); layout.className='rpg-menu-layout';
     const sidebar=this.documentRef.createElement('div'); sidebar.className='rpg-menu-sidebar-host';
@@ -37,11 +39,23 @@ export class RPGMenuController {
     return this.root;
   }
   createPageContent(page){
+    const context=this.getState?.()??{};
+    const renderer=getScreenRenderer(page);
+    if(renderer){
+      try{return renderer(this.documentRef,context)??this.createGenericPage(page,context);}catch(error){
+        menuNotifications.push(`${page} failed to render: ${error?.message??'unknown error'}`,'error',6000);
+      }
+    }
+    return this.createGenericPage(page,context);
+  }
+  createGenericPage(page,context={}){
     const body=this.documentRef.createElement('div'); body.className='menu-data-view';
     const data=getPageData(page); body.dataset.type=data.type;
     const title=this.documentRef.createElement('h2'); title.textContent=page; body.appendChild(title);
+    const summary=this.documentRef.createElement('p'); summary.textContent=`${data.type} system`; body.appendChild(summary);
     const categories=data.categories??data.panels??data.layers??data.filters??data.slots??[];
     if(categories.length){const list=this.documentRef.createElement('div');list.className='menu-category-grid';categories.forEach(item=>{const b=this.documentRef.createElement('button');b.type='button';b.className='menu-category';b.textContent=String(item);b.onclick=()=>menuNotifications.push(`${page}: ${item}`,'info');list.appendChild(b)});body.appendChild(list);}
+    if(context && typeof context==='object' && Object.keys(context).length){body.dataset.context='available';}
     return body;
   }
   open(menu,page){this.root.classList.remove('is-closed');return menu?this.router.go(menu,page):true}
