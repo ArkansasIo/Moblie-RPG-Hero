@@ -7,6 +7,7 @@ export * from './questData.js';
 export * from './combatData.js';
 export * from './eventData.js';
 export * from './professions.js';
+export * from './FantasyAssetCatalog.js';
 export * from './progressionSystem.js';
 export * from './skillSystem.js';
 export * from './lootSystem.js';
