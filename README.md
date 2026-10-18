@@ -692,3 +692,9 @@ The installer is written to `dist/`. GitHub Actions also validates pushed change
 - Renderer code uses native ES modules and the import map in `src/index.html`; it is intentionally not bundled by the current build.
 - Save data is stored in Electron's per-user application data directory.
 - The Windows packaging workflow is a build pipeline; it does not claim that the game has been runtime-tested on every Windows version.
+
+
+## New content: Mage
+
+A Mage is now defined in `src/config/heroClasses.js` as a recruitable back-line damage dealer. The existing combat renderer treats Mage attacks as ranged and renders the projectile in arcane purple. The default art falls back to the Knight sprite until you add `src/assets/hero-mage.png`; optional marching frames are `hero-mage-walk1.png` and `hero-mage-walk2.png`.
+
