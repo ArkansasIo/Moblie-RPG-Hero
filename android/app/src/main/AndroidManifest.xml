@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="true"
-        android:label="Taskbar Hero"
-        android:description="Taskbar Hero RPG/MMORPG — Version 0.3.0 — Developed by ArkansasIo"
+        android:label="Mo RPG Hero"
+        android:description="Mo RPG Hero RPG/MMORPG — Version 0.3.0 — Developed by ArkansasIo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
