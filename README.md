@@ -160,39 +160,31 @@ The core design keeps gameplay systems as deterministic/data-driven logic operat
 ## Development
 
 ```bash
-npm install
-npm start
-npm test
-node scripts/check-rpg-source.mjs
-npm run build
+npm ci
+npm run check
+npm run check:rpg
 ```
 
 ## Android Build
 
-Stage Android assets/source:
+The generated 169-PNG visual pack is optional. If it is not present, Android uses the SVG and pixel-art assets bundled in `src/`.
 
 ```bash
-npm run stage:android
+npm run android:assets
 ```
 
-Debug APK:
+Build an installable debug APK:
 
 ```bash
-cd android
-./gradlew assembleDebug
+npm run android:apk:debug
 ```
 
-Release APK:
+This writes the APK to `android/app/build/outputs/apk/debug/app-debug.apk`. A local Android build requires JDK 17, Android SDK API 35, and Gradle 8.10.2.
+
+Build both debug and release APKs:
 
 ```bash
-./gradlew assembleRelease
-```
-
-Windows:
-
-```bat
-gradlew.bat assembleDebug
-gradlew.bat assembleRelease
+npm run android:apk
 ```
 
 ## GitHub Actions
