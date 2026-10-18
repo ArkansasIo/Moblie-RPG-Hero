@@ -1,0 +1,39 @@
+{
+  "product": "Mo RPG Hero",
+  "previousName": "Taskbar Hero",
+  "version": "0.3.0",
+  "versionCode": 3,
+  "channel": "release-candidate",
+  "developer": "ArkansasIo",
+  "packageId": "io.arkansasio.taskbarhero",
+  "platforms": ["Android", "Windows", "Web"],
+  "releaseDate": "2026-10-18",
+  "updatePolicy": {
+    "codePatch": "apk",
+    "contentPatch": "versioned-content-manifest",
+    "assetPatch": "checksum-verified-bundle",
+    "databasePatch": "versioned-migration"
+  },
+  "integrity": {
+    "checksum": "sha256-required-at-publish-time",
+    "signature": "required-for-production"
+  },
+  "android": {
+    "artifact": "Mo-RPG-Hero-Android-0.3.0-unsigned.apk",
+    "signedArtifact": null,
+    "minSdk": 23,
+    "targetSdk": 35,
+    "releaseStatus": "unsigned-release-candidate"
+  },
+  "compatibility": {
+    "minimumClientVersion": "0.3.0",
+    "contentVersion": "0.3.0",
+    "schemaVersion": 1,
+    "audioManifestVersion": 1
+  },
+  "notes": [
+    "The logical MMO database contract is documented separately and can map to MySQL on server deployments.",
+    "A normal Android APK should use embedded/mobile persistence rather than bundling a full MySQL server.",
+    "Production Android distribution requires a signed release artifact."
+  ]
+}
