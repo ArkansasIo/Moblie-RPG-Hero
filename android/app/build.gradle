@@ -5,7 +5,7 @@ plugins {
 def buildVersionCode = project.hasProperty('buildVersionCode') ? project.property('buildVersionCode').toString().toInteger() : 4
 def buildVersionName = project.hasProperty('buildVersionName') ? project.property('buildVersionName').toString() : '0.3.1'
 
-a​ndroid {
+android {
     namespace 'io.arkansasio.taskbarhero'
     compileSdk 35
 
