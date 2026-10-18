@@ -9,8 +9,9 @@ const archive = process.argv[2] || path.join(root, 'assets', 'import', 'mo-rpg-h
 const destination = path.join(root, 'src', 'assets', 'visual');
 
 if (!fs.existsSync(archive)) {
-  console.log(`visual assets: no import archive at ${path.relative(root, archive)}; keeping SVG fallback assets`);
-  process.exit(0);
+  console.error(`visual assets: required import archive is missing: ${path.relative(root, archive)}`);
+  console.error('visual assets: provide the generated 169-PNG pack before building Android or validating the visual source.');
+  process.exit(1);
 }
 
 fs.rmSync(destination, { recursive: true, force: true });
