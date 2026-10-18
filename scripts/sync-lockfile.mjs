@@ -6,7 +6,7 @@ const required = {
   name: packageJson.name,
   version: packageJson.version,
   dependencies: packageJson.dependencies ?? {},
-  devDependencies: packageJson.devDependencies ?? {},
+  devDependencies: Object.fromEntries(Object.entries(packageJson.devDependencies ?? {}).filter(([name]) => name !== 'electron-builder')),
 };
 lock.name = required.name;
 lock.version = required.version;
