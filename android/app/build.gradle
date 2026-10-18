@@ -17,10 +17,20 @@ android {
         versionName buildVersionName
     }
 
+    signingConfigs {
+        // This project distributes CI/test builds directly to devices. The release
+        // variant must be signed; otherwise Android rejects the APK as unsigned.
+        // Use the Android debug keystore for the CI test/release artifact.
+        ciTest {
+            initWith signingConfigs.debug
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
+            signingConfig signingConfigs.ciTest
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
