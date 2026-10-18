@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="32" viewBox="0 0 144 32" shape-rendering="crispEdges">
+<rect width="32" height="32" fill="#274d32"/><path d="M0 22L7 12l5 5 6-10 14 15v10H0z" fill="#4e8b49"/><rect x="9" y="17" width="4" height="12" fill="#6d4a2b"/>
+<rect x="32" width="32" height="32" fill="#c48a3a"/><path d="M32 24h32v8H32z" fill="#e1aa4b"/><path d="M38 24l5-13 5 13zM50 24l5-16 5 16z" fill="#e8c56b"/>
+<rect x="64" width="32" height="32" fill="#8ec4d6"/><path d="M64 23l7-9 6 5 5-13 12 17v9H64z" fill="#e7f5fa"/><rect x="78" y="24" width="5" height="8" fill="#719bb2"/>
+<rect x="96" width="32" height="32" fill="#4d2c58"/><path d="M96 22l8-7 4 4 7-13 13 16v10H96z" fill="#8d4f9d"/><rect x="111" y="20" width="3" height="12" fill="#3bd7d9"/>
+<rect x="128" width="16" height="32" fill="#11182a"/><path d="M128 24l5-8 3 4 4-11v23h-12z" fill="#6c4f9f"/>
+</svg>
