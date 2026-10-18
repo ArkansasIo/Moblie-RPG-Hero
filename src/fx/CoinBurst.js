@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from '../../node_modules/pixi.js/dist/pixi.mjs';
 
 const COIN_COUNT = 3;
 const COIN_DURATION = 0.6; // seconds
