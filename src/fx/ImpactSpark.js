@@ -1,11 +1,7 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from '../../node_modules/pixi.js/dist/pixi.mjs';
 
-const SPARK_DURATION = 0.16; // seconds
+const SPARK_DURATION = 0.16;
 
-/**
- * A brief 4-point burst at an impact point - cheap visual "oomph" for both
- * melee collisions and projectile arrivals. Purely decorative, no game logic.
- */
 export class ImpactSparkManager {
   constructor(stage) {
     this.stage = stage;
@@ -31,14 +27,12 @@ export class ImpactSparkManager {
       const spark = this.active[i];
       spark.timer += deltaSeconds;
       const t = spark.timer / SPARK_DURATION;
-
       if (t >= 1) {
         this.stage.removeChild(spark.gfx);
         spark.gfx.destroy();
         this.active.splice(i, 1);
         continue;
       }
-
       spark.gfx.scale.set(1 + t * 1.5);
       spark.gfx.alpha = 1 - t;
     }
