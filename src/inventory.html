@@ -1,31 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Inventory</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#1c1a24" />
+  <title>Taskbar Hero Inventory</title>
   <link rel="stylesheet" href="inventory.css" />
 </head>
 <body>
   <header>
     <h1>Inventory</h1>
-    <div id="gold-display">0 gold</div>
+    <div id="gold-display" aria-live="polite">0 gold</div>
   </header>
 
-  <section id="party-section">
-    <h2>Party</h2>
-    <div id="party-list"></div>
-  </section>
+  <main>
+    <section id="party-section" aria-labelledby="party-title">
+      <h2 id="party-title">Party</h2>
+      <div id="party-list"></div>
+    </section>
 
-  <section id="recruit-section">
-    <h2>Recruit</h2>
-    <div id="recruit-list"></div>
-  </section>
+    <section id="recruit-section" aria-labelledby="recruit-title">
+      <h2 id="recruit-title">Recruit</h2>
+      <div id="recruit-list"></div>
+    </section>
 
-  <section id="inventory-section">
-    <h2>Items <span id="selected-hint"></span></h2>
-    <div id="inventory-grid"></div>
-  </section>
+    <section id="inventory-section" aria-labelledby="inventory-title">
+      <h2 id="inventory-title">Items <span id="selected-hint" aria-live="polite"></span></h2>
+      <div id="inventory-grid"></div>
+    </section>
+  </main>
 
   <script src="platform/browserBridge.js"></script>
   <script src="inventory.js"></script>
