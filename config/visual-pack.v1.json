@@ -1,0 +1,25 @@
+{
+  "pack": "mo-rpg-hero-generated-assets-v1",
+  "version": 1,
+  "format": "png",
+  "productionCount": 169,
+  "totalPngCount": 170,
+  "masterAssets": ["source/asset_sheet_master.png"],
+  "productionRoot": "src/assets/visual",
+  "archive": {
+    "filename": "mo-rpg-hero-generated-assets-v1.zip",
+    "sha256": "a28b40b3a71d16ce6e37a996c3a820d9cfe0baba61d69de5ec73d41ee72f515b",
+    "bytes": 5845305
+  },
+  "import": {
+    "source": "assets/import/mo-rpg-hero-generated-assets-v1.zip",
+    "destination": "src/assets/visual",
+    "script": "scripts/import-visual-assets.mjs"
+  },
+  "validation": {
+    "manifest": "src/assets/visual/visual-pack-manifest.json",
+    "sourceValidator": "scripts/validate-visual-assets.mjs",
+    "apkValidator": "scripts/verify-apk-assets.mjs",
+    "expectedApkPath": "assets/game/assets/visual"
+  }
+}
