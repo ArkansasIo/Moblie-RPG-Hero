@@ -1,0 +1,63 @@
+@startuml Mo_RPG_Hero_Audio
+
+title Mo RPG Hero — Audio Architecture UML
+
+package "Game Events" {
+  [Combat Events]
+  [World/Zone Events]
+  [Quest Events]
+  [UI Events]
+  [Multiplayer Events]
+}
+
+package "Audio Runtime" {
+  [Audio Manager]
+  [Music Director]
+  [SFX Player]
+  [Ambient Director]
+  [Voice Player]
+  [Audio Settings]
+}
+
+package "Audio Content" {
+  [Title Loop — 60s]
+  [Menu Music]
+  [Biome/Zone Tracks]
+  [Dungeon/Trial/Raid Tracks]
+  [Boss Themes]
+  [Combat SFX]
+  [UI SFX]
+  [Environment SFX]
+  [Voice Assets]
+}
+
+[Combat Events] --> [SFX Player]
+[Combat Events] --> [Music Director]
+[World/Zone Events] --> [Music Director]
+[World/Zone Events] --> [Ambient Director]
+[Quest Events] --> [Music Director]
+[UI Events] --> [SFX Player]
+[Multiplayer Events] --> [SFX Player]
+
+[Audio Settings] --> [Audio Manager]
+[Audio Manager] --> [Music Director]
+[Audio Manager] --> [SFX Player]
+[Audio Manager] --> [Ambient Director]
+[Audio Manager] --> [Voice Player]
+
+[Music Director] --> [Title Loop — 60s]
+[Music Director] --> [Menu Music]
+[Music Director] --> [Biome/Zone Tracks]
+[Music Director] --> [Dungeon/Trial/Raid Tracks]
+[Music Director] --> [Boss Themes]
+[SFX Player] --> [Combat SFX]
+[SFX Player] --> [UI SFX]
+[Ambient Director] --> [Environment SFX]
+[Voice Player] --> [Voice Assets]
+
+note right of [Title Loop — 60s]
+Designed for seamless looping:
+60 seconds, no audible gap at
+loop boundary.
+end note
+@enduml
