@@ -56,6 +56,8 @@ quick-scan history, not the deep dive.)*
   every state transition: per-enemy walk->idle timing matched the spawn
   stagger, the 6-frame attack ran its full sequence and returned to idle via
   `onComplete`, and boss stages correctly picked `skeletonKnight`.
+- [x] Added Mage recruitable class (starter implementation; sprites can be supplied as `hero-mage.png` and `hero-mage-walk1/2.png`)
+- [x] Added npm validation scripts, Windows NSIS packaging, and CI workflow
 - [ ] **Next up is your call** — see "possible next steps" below.
 
 **Where to edit things** (see README for full detail):
@@ -120,7 +122,8 @@ illustration skills take over from mine.
 ## Phase 3 — Content Expansion
 Goal: give players (including future-you) reasons to keep the game running for weeks.
 
-- [ ] More hero classes beyond knight/ranger/priest (mage? rogue?)
+- [x] Mage hero class and recruit path (uses arcane-bolt tint with the existing projectile pipeline; placeholder class art falls back to Knight until Mage sprites are added)
+- [ ] More hero classes beyond knight/ranger/priest (e.g. rogue)
 - [x] Recruit-hero UI (spend gold to add ranger/priest to the party via the inventory popup's Recruit section)
 - [x] Boss stages every `BOSS_INTERVAL` (10) stages - bigger, red-tinted
   enemy, background tint builds toward it, plus unique mechanics (enrage at
@@ -162,7 +165,7 @@ Goal: make it feel like a maintained product, not a one-off script.
 ## Phase 6 — Packaging & Distribution
 Goal: get it onto an actual machine (yours, then maybe others').
 
-- [ ] `electron-builder` config for a Windows installer (`.exe`/NSIS)
+- [x] `electron-builder` config for a Windows installer (`.exe`/NSIS)
 - [ ] App icon in all required sizes (`.ico` for Windows)
 - [ ] Code signing (optional but avoids SmartScreen warnings if you go public)
 - [ ] Decide: personal tool only, itch.io release, or Steam page — each has
