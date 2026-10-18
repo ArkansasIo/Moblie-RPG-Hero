@@ -16,7 +16,26 @@
 </head>
 <body>
   <div id="game-root"></div>
+  <button id="fantasy-codex-button" class="rpg-command-button" type="button" aria-label="Open fantasy asset codex">CODEX</button>
+  <section id="fantasy-codex" class="fantasy-codex" hidden aria-label="Fantasy asset codex">
+    <div class="fantasy-codex__bar">
+      <strong>Fantasy Codex</strong>
+      <button id="fantasy-codex-close" type="button" aria-label="Close fantasy codex">×</button>
+    </div>
+    <img src="assets/generated/dnd5e-inspired-atlas.svg" alt="Fantasy RPG asset atlas showing weapons, armor, spells, monsters, bosses, overworld and dungeon categories" />
+  </section>
   <script type="module" src="game.js"></script>
   <script type="module" src="rpg/boot.js"></script>
+  <script>
+    (() => {
+      const button = document.getElementById('fantasy-codex-button');
+      const panel = document.getElementById('fantasy-codex');
+      const close = document.getElementById('fantasy-codex-close');
+      if (!button || !panel || !close) return;
+      const toggle = (open) => { panel.hidden = !open; };
+      button.addEventListener('click', () => toggle(panel.hidden));
+      close.addEventListener('click', () => toggle(false));
+    })();
+  </script>
 </body>
 </html>
