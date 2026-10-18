@@ -1,0 +1,95 @@
+@startuml Mo_RPG_Hero_System
+!theme plain
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+title Mo RPG Hero — System Architecture UML
+
+package "Client" {
+  [PixiJS Game Renderer] as Renderer
+  [RPG Menu / UI] as UI
+  [Inventory UI] as InventoryUI
+  [Sound Manager] as Audio
+  [Input / Browser Bridge] as Input
+}
+
+package "Game Logic" {
+  [GameState] as State
+  [CombatSystem] as Combat
+  [WaveSystem] as Waves
+  [ProgressionSystem] as Progression
+  [LootSystem] as Loot
+  [Hero Entity] as Hero
+  [Enemy Entity] as Enemy
+  [SaveManager] as Save
+}
+
+package "Content Data" {
+  [Hero Classes] as Classes
+  [Enemy Roles] as Roles
+  [Loot Tables] as LootTables
+  [Weapon Types] as Weapons
+  [Boss Mechanics] as Boss
+  [World / Quest / RPG Data] as World
+  [Audio Manifest] as AudioData
+}
+
+package "Android" {
+  [Android WebView] as WebView
+  [APK Package] as APK
+  [Host Session] as Host
+}
+
+package "Future Online Services" {
+  [Authoritative Game Server] as Server
+  database "MySQL / Server DB" as DB
+  [Patch / Content Catalog] as Patch
+}
+
+Input --> UI
+Input --> Renderer
+UI --> State
+InventoryUI --> State
+Renderer --> State
+Renderer --> Audio
+Audio --> AudioData
+
+Combat --> State
+Combat --> Hero
+Combat --> Enemy
+Combat --> Boss
+Waves --> Enemy
+Waves --> Roles
+Loot --> LootTables
+Loot --> Weapons
+Progression --> State
+Progression --> Combat
+Progression --> Loot
+Hero --> Classes
+Save --> State
+Save --> World
+
+WebView --> Renderer
+WebView --> UI
+APK --> WebView
+Host --> State
+Host --> Save
+
+Host ..> Server : future network mode
+Server --> DB
+Server --> Patch
+Patch ..> APK : release/update metadata
+Patch ..> World : content manifest
+
+note right of State
+Single source of truth for the
+current local simulation.
+end note
+
+note bottom of Server
+Online MMO authority should own
+combat results, inventory, currency,
+trading, guild permissions and
+persistent competitive results.
+end note
+@enduml
