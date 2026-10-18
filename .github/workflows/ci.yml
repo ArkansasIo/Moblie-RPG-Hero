@@ -23,12 +23,12 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Check main-process JavaScript syntax
         run: npm run check
       - name: Check renderer module syntax
         run: |
-          node --check src/game.js
+          node --check --input-type=module < src/game.js
           node --check src/inventory.js
       - name: Verify required application files
         run: |
