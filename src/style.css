@@ -16,3 +16,19 @@ html, body {
 canvas {
   display: block;
 }
+
+.rpg-command-button {
+  position: fixed;
+  top: 4px;
+  right: 4px;
+  z-index: 10000;
+  border: 1px solid #4d6684;
+  border-radius: 4px;
+  background: #101b2a;
+  color: #a9defc;
+  padding: 4px 7px;
+  font: 700 9px system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0008;
+}
+.rpg-command-button:hover { background: #19304a; color: #fff; }
