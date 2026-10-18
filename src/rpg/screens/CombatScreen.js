@@ -1,0 +1,2 @@
+import {statGrid,panel} from '../MenuPanels.js';
+export function renderCombatScreen(documentRef,combat={}){const root=documentRef.createElement('div');root.className='rpg-screen combat-screen';root.append(panel(documentRef,'Combat',combat.target??'No target'));root.append(statGrid(documentRef,{Damage:combat.damage??0,Crit:combat.crit??0,Defense:combat.defense??0,Threat:combat.threat??0}));return root}
