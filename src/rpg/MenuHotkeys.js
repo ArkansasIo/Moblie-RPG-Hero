@@ -1,0 +1,3 @@
+const DEFAULT_BINDINGS=Object.freeze({Escape:'close',Backspace:'back',F1:'character',F2:'inventory',F3:'world',F4:'combat',F5:'quests',F6:'multiplayer',F7:'pvp',F8:'progression',F9:'economy',F10:'system'});
+export function installMenuHotkeys({target=window,router,close,open}={}){const handler=e=>{const action=DEFAULT_BINDINGS[e.key];if(!action)return;if(['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10'].includes(e.key)){e.preventDefault();if(router)router.go(action,undefined);else if(open)open(action);return}if(action==='close'&&close){e.preventDefault();close()}if(action==='back'&&router){e.preventDefault();router.back()}};target.addEventListener('keydown',handler);return()=>target.removeEventListener('keydown',handler)}
+export {DEFAULT_BINDINGS};
