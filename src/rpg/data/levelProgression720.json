@@ -1,0 +1,21 @@
+{
+  "levelCap": 720,
+  "bands": [
+    {"min":1,"max":60,"tier":"Novice","zone":"Greenwood Plains"},
+    {"min":61,"max":120,"tier":"Apprentice","zone":"Crystal Mountains"},
+    {"min":121,"max":180,"tier":"Veteran","zone":"Sunken Ruins"},
+    {"min":181,"max":240,"tier":"Elite","zone":"Volcanic Wastes"},
+    {"min":241,"max":300,"tier":"Heroic","zone":"Frost Tundra"},
+    {"min":301,"max":360,"tier":"Mythic","zone":"Desert Sands"},
+    {"min":361,"max":420,"tier":"Ascendant","zone":"Dark Forest"},
+    {"min":421,"max":480,"tier":"Celestial","zone":"Sky Islands"},
+    {"min":481,"max":540,"tier":"Eternal","zone":"Underworld"},
+    {"min":541,"max":600,"tier":"Transcendent","zone":"Nexus Realm"},
+    {"min":601,"max":660,"tier":"Paragon","zone":"Celestial Nexus"},
+    {"min":661,"max":720,"tier":"Nexus","zone":"Eternal Nexus"}
+  ],
+  "xpFormula":"floor(level^2.5 * 500)",
+  "statScale":"1 + floor(level / 10)",
+  "equipmentTierEveryLevels":60,
+  "towerFloors":100
+}
