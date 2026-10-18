@@ -1,7 +1,6 @@
 // Browser/Android fallback for the Electron IPC bridge.
 // Electron's preload.js still supplies the real bridge in the desktop build.
-// Android packages the same src/ tree inside a WebView, so this fallback keeps
-// saves and inventory actions local to the WebView origin.
+// Android packages src/ inside a WebView and persists its save locally.
 (function installBrowserBridge() {
   if (window.taskbarHero) return;
 
@@ -10,11 +9,23 @@
   window.taskbarHero = {
     async loadGame() {
       const raw = localStorage.getItem(SAVE_KEY);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (error) {
+        console.warn('Taskbar Hero save is unreadable; starting a fresh save.', error);
+        return null;
+      }
     },
 
     async saveGame(data) {
-      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      } catch (error) {
+        console.error('Unable to save Taskbar Hero progress.', error);
+        throw error;
+      }
     },
 
     setIgnoreMouse() {},
@@ -25,6 +36,7 @@
   };
 
   let syncHandler = null;
+  let syncInFlight = false;
 
   async function loadState() {
     const [{ GameState }, { HERO_CLASSES, MAX_PARTY_SIZE }] = await Promise.all([
@@ -32,24 +44,38 @@
       import('./config/heroClasses.js'),
     ]);
     const saved = await window.taskbarHero.loadGame();
-    return { state: GameState.fromSave(saved), HERO_CLASSES, MAX_PARTY_SIZE };
+    // GameState.fromSave assumes any saved party is an array.
+    // Recover safely from older/corrupted saves without breaking the UI.
+    let state;
+    try {
+      state = GameState.fromSave(saved);
+    } catch (error) {
+      console.warn('Unable to load saved party; using a fresh game state.', error);
+      state = new GameState();
+    }
+    return { state, HERO_CLASSES, MAX_PARTY_SIZE };
   }
 
   async function syncInventory() {
-    if (!syncHandler) return;
-    const { state, HERO_CLASSES, MAX_PARTY_SIZE } = await loadState();
-    const partyClasses = new Set(state.party.map((hero) => hero.classId));
-    const recruitable = Object.entries(HERO_CLASSES)
-      .filter(([classId]) => !partyClasses.has(classId))
-      .map(([classId, def]) => ({ classId, label: def.label, cost: def.recruitCost }));
+    if (!syncHandler || syncInFlight) return;
+    syncInFlight = true;
+    try {
+      const { state, HERO_CLASSES, MAX_PARTY_SIZE } = await loadState();
+      const partyClasses = new Set(state.party.map((hero) => hero.classId));
+      const recruitable = Object.entries(HERO_CLASSES)
+        .filter(([classId, def]) => def.recruitCost > 0 && !partyClasses.has(classId))
+        .map(([classId, def]) => ({ classId, label: def.label, cost: def.recruitCost }));
 
-    syncHandler({
-      gold: state.gold,
-      partyFull: state.party.length >= MAX_PARTY_SIZE,
-      party: state.party.map((hero) => hero.serialize()),
-      recruitable,
-      inventory: state.inventory,
-    });
+      syncHandler({
+        gold: state.gold,
+        partyFull: state.party.length >= MAX_PARTY_SIZE,
+        party: state.party.map((hero) => hero.serialize()),
+        recruitable,
+        inventory: state.inventory,
+      });
+    } finally {
+      syncInFlight = false;
+    }
   }
 
   window.inventoryBridge = {
@@ -58,28 +84,40 @@
     },
 
     async requestSync() {
-      try { await syncInventory(); } catch (error) { console.error(error); }
+      try {
+        await syncInventory();
+      } catch (error) {
+        console.error('Unable to refresh Taskbar Hero inventory.', error);
+      }
     },
 
     async recruitHero(classId) {
-      const { state, HERO_CLASSES, MAX_PARTY_SIZE } = await loadState();
-      const def = HERO_CLASSES[classId];
-      if (!def || state.party.length >= MAX_PARTY_SIZE) return;
-      if (state.party.some((hero) => hero.classId === classId)) return;
-      if (state.gold < def.recruitCost) return;
-      state.gold -= def.recruitCost;
-      state.addHero(classId);
-      await window.taskbarHero.saveGame(state.serialize());
-      await syncInventory();
+      try {
+        const { state, HERO_CLASSES, MAX_PARTY_SIZE } = await loadState();
+        const def = HERO_CLASSES[classId];
+        if (!def || def.recruitCost <= 0 || state.party.length >= MAX_PARTY_SIZE) return;
+        if (state.party.some((hero) => hero.classId === classId)) return;
+        if (state.gold < def.recruitCost) return;
+        state.gold -= def.recruitCost;
+        state.addHero(classId);
+        await window.taskbarHero.saveGame(state.serialize());
+        await syncInventory();
+      } catch (error) {
+        console.error('Unable to recruit hero.', error);
+      }
     },
 
     async equipItem(heroId, itemId) {
-      const { state } = await loadState();
-      const hero = state.party.find((candidate) => candidate.id === heroId);
-      const item = state.inventory.find((candidate) => candidate.id === itemId);
-      if (!hero || !item || !hero.equip(item)) return;
-      await window.taskbarHero.saveGame(state.serialize());
-      await syncInventory();
+      try {
+        const { state } = await loadState();
+        const hero = state.party.find((candidate) => candidate.id === heroId);
+        const item = state.inventory.find((candidate) => candidate.id === itemId);
+        if (!hero || !item || typeof hero.equip !== 'function' || !hero.equip(item)) return;
+        await window.taskbarHero.saveGame(state.serialize());
+        await syncInventory();
+      } catch (error) {
+        console.error('Unable to equip item.', error);
+      }
     },
   };
 })();
