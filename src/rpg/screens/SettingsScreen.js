@@ -1,0 +1,2 @@
+import {list,panel} from '../MenuPanels.js';
+export function renderSettingsScreen(documentRef,settings={}){const root=documentRef.createElement('div');root.className='rpg-screen settings-screen';root.append(panel(documentRef,'Settings',list(documentRef,Object.keys(settings).length?Object.keys(settings):['Game','Gameplay','Interface','Audio','Video','Accessibility','Controls','Save / Load'])));return root}
