@@ -662,3 +662,33 @@ dots, or a guaranteed rare+ drop specifically from boss kills.
   environments have no system tray host - it'll log a warning and keep
   running rather than crash, but you won't see a tray icon there. The bag
   icon on the strip still works as a fallback.
+
+
+## Build and package
+
+This repository is an Electron desktop game. Use Node.js 20 or newer and npm.
+
+```bash
+npm ci
+npm start
+```
+
+Run the local syntax checks with:
+
+```bash
+npm run check
+```
+
+Create a Windows NSIS installer (64-bit) with:
+
+```bash
+npm run dist
+```
+
+The installer is written to `dist/`. GitHub Actions also validates pushed changes and produces a downloadable Windows installer artifact on pushes to `main` and manual workflow runs. The artifact is not a GitHub Release; publish a release separately when you are ready to distribute a version.
+
+### Current build notes
+
+- Renderer code uses native ES modules and the import map in `src/index.html`; it is intentionally not bundled by the current build.
+- Save data is stored in Electron's per-user application data directory.
+- The Windows packaging workflow is a build pipeline; it does not claim that the game has been runtime-tested on every Windows version.
