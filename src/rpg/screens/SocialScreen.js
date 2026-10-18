@@ -1,0 +1,2 @@
+import {list,panel} from '../MenuPanels.js';
+export function renderSocialScreen(documentRef,{friends=[],guild=[],party=[]}={}){const root=documentRef.createElement('div');root.className='rpg-screen social-screen';root.append(panel(documentRef,'Party',list(documentRef,party)));root.append(panel(documentRef,'Guild',list(documentRef,guild)));root.append(panel(documentRef,'Friends',list(documentRef,friends)));return root}
