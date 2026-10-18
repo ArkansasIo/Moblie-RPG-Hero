@@ -2,7 +2,7 @@
 
 **Version:** 0.3.0
 
-This document records the repository structure and the role of the major source, build, documentation, RPG data, runtime-system, and Android files.
+This document records the repository structure and the role of the major source, build, documentation, RPG data, runtime-system, fantasy asset, and Android files.
 
 ## Core application
 
@@ -10,8 +10,23 @@ This document records the repository structure and the role of the major source,
 - `preload.js` — secure renderer bridge.
 - `preload-inventory.js` — inventory-window bridge.
 - `src/game.js` — main game renderer and simulation loop.
-- `src/index.html` / `src/style.css` — main UI shell.
+- `src/index.html` / `src/style.css` — mobile game shell and presentation UI.
 - `src/inventory.html` / `src/inventory.js` / `src/inventory.css` — inventory UI.
+
+## Fantasy asset integration
+
+```text
+src/assets/fantasy/
+├── dnd5e-class-emblems.svg
+├── dnd5e-equipment.svg
+├── dnd5e-monsters.svg
+└── dnd5e-biomes.svg
+
+src/rpg/
+└── FantasyAssetCatalog.js
+```
+
+The fantasy sheets are now exposed through the RPG/MMO command UI. The catalog provides stable IDs for classes, equipment, monsters and biomes; the browser crops the five-frame SVG sheets with CSS background positioning so the individual assets can be selected in-game.
 
 ## Android
 
@@ -38,6 +53,7 @@ src/rpg/
 ├── eventData.js
 ├── professions.js
 ├── mmorpgSystems.js
+├── FantasyAssetCatalog.js
 └── index.js
 ```
 
@@ -51,6 +67,7 @@ src/rpg/
 - `eventData.js` — world events and world-boss definitions.
 - `professions.js` — 12 gathering/crafting professions with level-100 progression.
 - `mmorpgSystems.js` — MMO-facing system definitions.
+- `FantasyAssetCatalog.js` — stable in-game fantasy asset IDs and sheet/frame mappings.
 - `index.js` — consolidated RPG data exports.
 
 ## Configuration
@@ -96,10 +113,11 @@ src/systems/
 ├── TravelSystem.js
 ├── WaveSystem.js
 ├── WorldBossSystem.js
-└── WorldSystem.js
+├── WorldSystem.js
+└── ZoneSystem.js
 ```
 
-The runtime layer now covers character lifecycle, stats, equipment, inventory, professions, quests, combat, loot, dungeons, raids, tower progression, trails, travel, world events, world bosses, parties, economy, social/MMO systems, and persistence.
+The runtime layer covers character lifecycle, stats, equipment, inventory, professions, quests, combat, loot, dungeons, raids, tower progression, trails, travel, world events, world bosses, parties, economy, social/MMO systems, zones, and persistence.
 
 ## State and entities
 
@@ -111,7 +129,7 @@ The runtime layer now covers character lifecycle, stats, equipment, inventory, p
 ## Documentation
 
 - `README.md` — project overview and development guide.
-- `ALL_FILES.md` — this maintained source inventory.
+- `ALL_FILES.md` — maintained source inventory.
 - `docs/SOURCE_TREE.md` — architectural source tree.
 - `docs/RPG_COMPONENTS.md` — RPG component/data architecture.
 - `docs/RUNTIME_SYSTEMS.md` — runtime system architecture and data flow.
@@ -192,5 +210,6 @@ cd android
 5. Update `ALL_FILES.md` when a major source/config/documentation file is introduced.
 6. Keep Android packaging changes documented in `docs/ANDROID_BUILD.md`.
 7. Treat client systems as gameplay/domain helpers; multiplayer authority belongs on a server.
+8. Keep fantasy asset IDs stable so saves, UI selections and future server payloads can refer to them safely.
 
 Binary assets and transient build output are summarized rather than enumerated byte-for-byte.
