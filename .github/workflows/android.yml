@@ -38,7 +38,7 @@ jobs:
           cache: npm
 
       - name: Install JavaScript dependencies
-        run: npm ci
+        run: npm install
 
       - name: Stage web game into Android assets
         shell: bash
