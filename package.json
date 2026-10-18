@@ -1,7 +1,7 @@
 {
-  "name": "taskbar-hero-clone",
+  "name": "mo-rpg-hero",
   "version": "0.3.0",
-  "description": "Taskbar Hero RPG/MMORPG — pixel-art idle RPG by ArkansasIo",
+  "description": "Mo RPG Hero — pixel-art RPG/MMORPG by ArkansasIo",
   "author": "ArkansasIo",
   "main": "main.js",
   "private": true,
@@ -21,12 +21,12 @@
   "dependencies": { "pixi.js": "^7.4.2" },
   "build": {
     "appId": "io.arkansasio.taskbarhero",
-    "productName": "Taskbar Hero",
-    "artifactName": "Taskbar-Hero-${version}-${os}-${arch}.${ext}",
+    "productName": "Mo RPG Hero",
+    "artifactName": "Mo-RPG-Hero-${version}-${os}-${arch}.${ext}",
     "asar": true,
     "files": ["main.js","preload.js","preload-inventory.js","src/**/*","assets/**/*","package.json","node_modules/**/*"],
     "directories": { "output": "dist" },
     "win": { "target": [{ "target": "nsis", "arch": ["x64"] }] },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "Taskbar Hero" }
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "Mo RPG Hero" }
   }
 }
