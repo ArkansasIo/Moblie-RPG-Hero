@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=src/index.html">
+  <title>Mobile RPG Hero</title>
+</head>
+<body>
+  <p>Launching Mobile RPG Hero…</p>
+  <script>
+    (() => {
+      const base = location.pathname.endsWith('/') ? location.pathname : location.pathname.replace(/\/[^/]*$/, '/');
+      location.replace(`${base}src/index.html${location.search}${location.hash}`);
+    })();
+  </script>
+</body>
+</html>
