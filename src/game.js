@@ -1,4 +1,8 @@
-import * as PIXI from '../node_modules/pixi.js/dist/pixi.mjs';
+const PIXI_SOURCE = window.location.protocol === 'file:'
+  ? '../node_modules/pixi.js/dist/pixi.mjs'
+  : 'https://cdn.jsdelivr.net/npm/pixi.js@7.4.2/dist/pixi.mjs';
+const PIXI = await import(PIXI_SOURCE);
+
 import { SaveManager } from './state/SaveManager.js';
 import { ProgressionSystem, BOSS_INTERVAL } from './systems/ProgressionSystem.js';
 import { FloatingTextManager } from './fx/FloatingTextManager.js';
