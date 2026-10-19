@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Mobile RPG Hero</title>
+</head>
+<body>
+  <p>Returning to Mobile RPG Hero…</p>
+  <script>
+    (() => {
+      const parts = location.pathname.split('/').filter(Boolean);
+      const base = parts.length ? `/${parts[0]}/` : '/';
+      location.replace(`${base}src/index.html`);
+    })();
+  </script>
+</body>
+</html>
