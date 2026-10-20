@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#07101c">
   <title>Mobile RPG Hero</title>
 </head>
 <body>
@@ -11,8 +12,16 @@
   <script>
     (() => {
       const parts = location.pathname.split('/').filter(Boolean);
-      const base = parts.length ? `/${parts[0]}/` : '/';
-      location.replace(`${base}src/index.html`);
+      const project = parts.length ? parts[0] : '';
+      const base = project ? `/${project}/` : '/';
+      const requested = location.pathname.startsWith(base)
+        ? location.pathname.slice(base.length)
+        : '';
+      const route = new URL('src/index.html', location.origin + base);
+      if (requested && !requested.startsWith('src/')) route.searchParams.set('requestedPath', requested);
+      route.search = location.search || route.search;
+      route.hash = location.hash;
+      location.replace(route.href);
     })();
   </script>
 </body>
