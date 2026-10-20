@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="rpg/rpg-menu-mobile.css" />
   <script src="platform/browserBridge.js"></script>
   <script type="importmap">
-    {"imports":{"pixi.js":"/assets/node_modules/pixi.js/dist/pixi.mjs"}}
+    {"imports":{"pixi.js":"assets/node_modules/pixi.js/dist/pixi.mjs"}}
   </script>
   <style>
     html,body{margin:0;width:100%;height:100%;background:#07101c;color:#eae6f5;overflow:hidden}
@@ -52,7 +52,14 @@
         retry.hidden = false;
         status.textContent = 'Game engine failed to start.';
       };
-      window.addEventListener('error', event => showError(event.error?.stack || event.message));
+      window.addEventListener('error', event => {
+        if (event.target && event.target !== window) {
+          const failedUrl = event.target.src || event.target.href;
+          if (failedUrl) showError('Unable to load resource: ' + failedUrl);
+          return;
+        }
+        showError(event.error?.stack || event.message);
+      }, true);
       window.addEventListener('unhandledrejection', event => showError(event.reason?.stack || event.reason));
       retry.addEventListener('click', () => location.reload());
       window.__androidStartupReady = () => { startup.style.display = 'none'; };
